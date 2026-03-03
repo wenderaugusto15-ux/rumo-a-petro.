@@ -28,6 +28,8 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -163,7 +165,7 @@ export default function AuthPage() {
               <div className="flex justify-between">
                 <Label htmlFor="password">Senha</Label>
                 {!isSignup && (
-                  <button type="button" className="text-xs text-accent hover:underline">
+                   <button type="button" onClick={() => setForgotMode(true)} className="text-xs text-accent hover:underline">
                     Esqueci minha senha
                   </button>
                 )}
@@ -201,6 +203,56 @@ export default function AuthPage() {
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </form>
+
+          {/* Forgot password modal */}
+          {forgotMode && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+              onClick={() => setForgotMode(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="bg-card rounded-xl p-6 w-full max-w-sm shadow-xl space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-lg font-bold text-foreground">Recuperar senha</h3>
+                <p className="text-sm text-muted-foreground">Informe seu email para receber o link de redefinição.</p>
+                <Input
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setForgotMode(false)}>Cancelar</Button>
+                  <Button
+                    className="flex-1 bg-gradient-cta text-accent-foreground"
+                    disabled={forgotLoading || !email}
+                    onClick={async () => {
+                      setForgotLoading(true);
+                      try {
+                        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                          redirectTo: `${window.location.origin}/reset-password`,
+                        });
+                        if (error) throw error;
+                        toast({ title: "Email enviado! ✉️", description: "Verifique sua caixa de entrada." });
+                        setForgotMode(false);
+                      } catch (err: any) {
+                        toast({ title: "Erro", description: err.message, variant: "destructive" });
+                      } finally {
+                        setForgotLoading(false);
+                      }
+                    }}
+                  >
+                    {forgotLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enviar"}
+                  </Button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
             {isSignup ? (
