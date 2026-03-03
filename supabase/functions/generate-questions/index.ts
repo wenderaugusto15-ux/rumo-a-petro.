@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const aiKey = Deno.env.get("LOVABLE_API_KEY")!;
+    const geminiKey = Deno.env.get("GOOGLE_GEMINI_API_KEY")!;
 
     // Verify caller is admin
     const authHeader = req.headers.get("Authorization");
@@ -52,16 +52,12 @@ Nível: ${levelPt}. Lote ${batch_num}.
 Regras: enunciado contextualizado, 5 alternativas (A-E), gabarito e explicação. Estilo Cesgranrio. Varie tópicos.
 Retorne APENAS JSON array: [{"statement":"...","option_a":"...","option_b":"...","option_c":"...","option_d":"...","option_e":"...","correct_option":"A","explanation":"..."}]`;
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${aiKey}`,
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.95,
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.95 },
       }),
     });
 
@@ -74,7 +70,7 @@ Retorne APENAS JSON array: [{"statement":"...","option_a":"...","option_b":"..."
     }
 
     const aiData = await aiRes.json();
-    let content = aiData.choices?.[0]?.message?.content ?? "";
+    let content = aiData.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
     content = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
 
     let questions: any[];
