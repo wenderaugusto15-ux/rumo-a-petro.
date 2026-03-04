@@ -19,12 +19,13 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import EstudarConteudoModal from "@/components/EstudarConteudoModal";
 import UpgradeModal from "@/components/UpgradeModal";
-import { useSubscription } from "@/hooks/useSubscription";
+import { useAcesso } from "@/hooks/useAcesso";
+import UpgradeBanner from "@/components/UpgradeBanner";
 
 export default function EstudosMateriaPage() {
   const { materiaId } = useParams<{ materiaId: string }>();
   const { user } = useAuth();
-  const { isPro } = useSubscription();
+  const { isPremium: isPro, irParaPlanos } = useAcesso();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -129,6 +130,7 @@ export default function EstudosMateriaPage() {
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
+        <UpgradeBanner />
         <div className="space-y-4">
           <Button variant="ghost" size="sm" onClick={() => navigate("/app/estudos")} className="gap-2 text-muted-foreground">
             <ArrowLeft className="h-4 w-4" /> Voltar para Estudos
@@ -160,7 +162,7 @@ export default function EstudosMateriaPage() {
                   <Button
                     size="sm"
                     className="bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 shrink-0"
-                    onClick={() => navigate("/app/upgrade")}
+                    onClick={irParaPlanos}
                   >
                     Desbloquear tudo
                   </Button>

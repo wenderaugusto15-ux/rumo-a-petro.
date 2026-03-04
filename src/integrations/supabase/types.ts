@@ -302,6 +302,8 @@ export type Database = {
           created_at: string
           id: string
           name: string | null
+          plano: string
+          plano_ativo_ate: string | null
           track_id: string | null
           updated_at: string
           user_id: string
@@ -310,6 +312,8 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string | null
+          plano?: string
+          plano_ativo_ate?: string | null
           track_id?: string | null
           updated_at?: string
           user_id: string
@@ -318,6 +322,8 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string | null
+          plano?: string
+          plano_ativo_ate?: string | null
           track_id?: string | null
           updated_at?: string
           user_id?: string

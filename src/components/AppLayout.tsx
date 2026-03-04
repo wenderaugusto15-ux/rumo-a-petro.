@@ -2,11 +2,13 @@ import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Clock, TrendingUp, User,
-  Zap, LogOut, Award, CreditCard, Settings, Shield
+  Zap, LogOut, Award, CreditCard, Settings, Shield, Crown
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAcesso } from "@/hooks/useAcesso";
+import { Badge } from "@/components/ui/badge";
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/app" },
@@ -29,6 +31,7 @@ const bottomNavItems = [
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { isPremium, diasRestantes, irParaPlanos } = useAcesso();
   const handleSignOut = async () => {
     await signOut();
     navigate("/auth");
@@ -73,6 +76,29 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
+
+        {/* Plan indicator */}
+        <div className="px-3 pb-2">
+          {isPremium ? (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-400/10 to-yellow-500/10 border border-amber-400/20">
+              <Crown className="h-4 w-4 text-amber-500" />
+              <div className="text-xs">
+                <span className="font-bold text-sidebar-foreground">PREMIUM</span>
+                {diasRestantes !== null && (
+                  <span className="text-sidebar-foreground/60 ml-1">· {diasRestantes}d</span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={irParaPlanos}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 hover:bg-accent/20 transition-colors text-left"
+            >
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">FREE</Badge>
+              <span className="text-xs text-accent font-medium">Fazer Upgrade</span>
+            </button>
+          )}
+        </div>
 
         <div className="p-3 border-t border-sidebar-border space-y-1">
           {isAdmin && (
