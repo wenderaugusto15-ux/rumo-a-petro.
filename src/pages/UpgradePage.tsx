@@ -3,6 +3,7 @@ import { Check, X, Zap, Crown, Shield, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
+import { getCheckoutUrl } from "@/lib/checkoutLinks";
 
 const plans = [
   {
@@ -68,10 +69,10 @@ const plans = [
 export default function UpgradePage() {
   const { user } = useAuth();
 
-  const getCheckoutUrl = (baseUrl: string, planType: string) => {
-    if (!user) return baseUrl;
-    const separator = baseUrl.includes("?") ? "&" : "?";
-    return `${baseUrl}${separator}client_ref=${user.id}&metadata[user_id]=${user.id}&metadata[plan_type]=${planType}`;
+  const buildCheckoutUrl = (plan: { checkoutUrl?: string; name: string }) => {
+    if (!plan.checkoutUrl) return "";
+    const planType = plan.name.includes("Semestral") ? "semestral" : "mensal";
+    return getCheckoutUrl(planType as "mensal" | "semestral", user?.id);
   };
 
   return (
@@ -154,8 +155,7 @@ export default function UpgradePage() {
                 disabled={plan.current}
                 onClick={() => {
                   if (!plan.current && plan.checkoutUrl) {
-                    const planType = plan.name.includes("Semestral") ? "semestral" : "mensal";
-                    window.open(getCheckoutUrl(plan.checkoutUrl, planType), "_blank");
+                    window.open(buildCheckoutUrl(plan), "_blank");
                   }
                 }}
               >

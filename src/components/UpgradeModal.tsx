@@ -2,6 +2,8 @@ import { Lock, ChevronRight, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
+import { openCheckout } from "@/lib/checkoutLinks";
+import { useAuth } from "@/hooks/useAuth";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -10,6 +12,7 @@ interface UpgradeModalProps {
 
 export default function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -28,7 +31,7 @@ export default function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) 
             className="w-full bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90"
             onClick={() => {
               onOpenChange(false);
-              navigate("/app/upgrade");
+              openCheckout("semestral", user?.id);
             }}
           >
             Desbloquear Agora - A partir de R$ 47/mês

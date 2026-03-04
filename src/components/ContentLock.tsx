@@ -2,6 +2,8 @@ import { ReactNode } from "react";
 import { Lock, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAcesso } from "@/hooks/useAcesso";
+import { openCheckout } from "@/lib/checkoutLinks";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ContentLockProps {
   ordem: number;
@@ -11,6 +13,7 @@ interface ContentLockProps {
 
 export default function ContentLock({ ordem, tipo = "aula", children }: ContentLockProps) {
   const { isPremium, podeAcessarAula, irParaPlanos } = useAcesso();
+  const { user } = useAuth();
 
   if (isPremium || podeAcessarAula(ordem)) {
     return <>{children}</>;
@@ -32,9 +35,9 @@ export default function ContentLock({ ordem, tipo = "aula", children }: ContentL
           </p>
           <Button
             className="bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 w-full"
-            onClick={irParaPlanos}
+            onClick={() => openCheckout("semestral", user?.id)}
           >
-            Ver Planos
+            Assinar PRO
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
           <button
