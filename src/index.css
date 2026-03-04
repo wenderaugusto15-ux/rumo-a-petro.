@@ -137,6 +137,8 @@
     box-shadow: var(--shadow-cta);
   }
   
- #lovable-badge {
-display: none !important;
+  #lovable-badge {
+    display: none !important;
+  }
 }
+
