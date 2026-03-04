@@ -3,22 +3,21 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  ArrowLeft, Play, FileText, FileDown, BookOpen,
-  CheckCircle2, Clock, FolderOpen,
+  ArrowLeft, Play, FileText, FileDown, BookOpen, Clock, FolderOpen,
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import EstudarConteudoModal from "@/components/EstudarConteudoModal";
 
 export default function EstudosMateriaPage() {
   const { materiaId } = useParams<{ materiaId: string }>();
@@ -26,16 +25,12 @@ export default function EstudosMateriaPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedConteudo, setSelectedConteudo] = useState<any>(null);
+  const [selectedConteudoId, setSelectedConteudoId] = useState<string | null>(null);
 
   const { data: materia, isLoading: loadingMateria } = useQuery({
     queryKey: ["materia", materiaId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("materias")
-        .select("*")
-        .eq("id", materiaId!)
-        .single();
+      const { data } = await supabase.from("materias").select("*").eq("id", materiaId!).single();
       return data;
     },
     enabled: !!materiaId,
@@ -44,12 +39,7 @@ export default function EstudosMateriaPage() {
   const { data: modulos, isLoading: loadingModulos } = useQuery({
     queryKey: ["modulos-materia", materiaId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("modulos")
-        .select("*")
-        .eq("materia_id", materiaId!)
-        .eq("ativo", true)
-        .order("ordem");
+      const { data } = await supabase.from("modulos").select("*").eq("materia_id", materiaId!).eq("ativo", true).order("ordem");
       return data || [];
     },
     enabled: !!materiaId,
@@ -60,12 +50,7 @@ export default function EstudosMateriaPage() {
     queryFn: async () => {
       const moduloIds = (modulos || []).map(m => m.id);
       if (moduloIds.length === 0) return [];
-      const { data } = await supabase
-        .from("conteudos")
-        .select("*")
-        .in("modulo_id", moduloIds)
-        .eq("ativo", true)
-        .order("ordem");
+      const { data } = await supabase.from("conteudos").select("*").in("modulo_id", moduloIds).eq("ativo", true).order("ordem");
       return data || [];
     },
     enabled: !!modulos && modulos.length > 0,
@@ -76,11 +61,7 @@ export default function EstudosMateriaPage() {
     queryFn: async () => {
       const conteudoIds = (conteudos || []).map(c => c.id);
       if (conteudoIds.length === 0) return [];
-      const { data } = await supabase
-        .from("progresso_estudo")
-        .select("*")
-        .eq("user_id", user!.id)
-        .in("conteudo_id", conteudoIds);
+      const { data } = await supabase.from("progresso_estudo").select("*").eq("user_id", user!.id).in("conteudo_id", conteudoIds);
       return data || [];
     },
     enabled: !!user && !!conteudos && conteudos.length > 0,
@@ -92,21 +73,9 @@ export default function EstudosMateriaPage() {
     mutationFn: async (conteudoId: string) => {
       const existing = (progresso || []).find(p => p.conteudo_id === conteudoId);
       if (existing) {
-        await supabase
-          .from("progresso_estudo")
-          .update({
-            concluido: !existing.concluido,
-            data_conclusao: !existing.concluido ? new Date().toISOString() : null,
-          })
-          .eq("id", existing.id);
+        await supabase.from("progresso_estudo").update({ concluido: !existing.concluido, data_conclusao: !existing.concluido ? new Date().toISOString() : null }).eq("id", existing.id);
       } else {
-        await supabase.from("progresso_estudo").insert({
-          user_id: user!.id,
-          conteudo_id: conteudoId,
-          concluido: true,
-          data_inicio: new Date().toISOString(),
-          data_conclusao: new Date().toISOString(),
-        });
+        await supabase.from("progresso_estudo").insert({ user_id: user!.id, conteudo_id: conteudoId, concluido: true, data_inicio: new Date().toISOString(), data_conclusao: new Date().toISOString() });
       }
     },
     onSuccess: () => {
@@ -123,8 +92,6 @@ export default function EstudosMateriaPage() {
   };
 
   const cor = materia?.cor || "#1e3a5f";
-
-  // Overall materia progress
   const allConteudoIds = (conteudos || []).map(c => c.id);
   const totalDone = allConteudoIds.filter(id => completedMap.get(id)).length;
   const totalAll = allConteudoIds.length;
@@ -140,10 +107,8 @@ export default function EstudosMateriaPage() {
   };
 
   const statusBadge = (status: string) => {
-    if (status === "done")
-      return <Badge className="bg-green-500/15 text-green-600 border-green-500/30 text-xs">Concluído</Badge>;
-    if (status === "in_progress")
-      return <Badge className="bg-yellow-500/15 text-yellow-600 border-yellow-500/30 text-xs">Em andamento</Badge>;
+    if (status === "done") return <Badge className="bg-green-500/15 text-green-600 border-green-500/30 text-xs">Concluído</Badge>;
+    if (status === "in_progress") return <Badge className="bg-yellow-500/15 text-yellow-600 border-yellow-500/30 text-xs">Em andamento</Badge>;
     return <Badge variant="secondary" className="text-xs">Não iniciado</Badge>;
   };
 
@@ -152,18 +117,13 @@ export default function EstudosMateriaPage() {
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
-        {/* Header */}
         <div className="space-y-4">
           <Button variant="ghost" size="sm" onClick={() => navigate("/app/estudos")} className="gap-2 text-muted-foreground">
             <ArrowLeft className="h-4 w-4" /> Voltar para Estudos
           </Button>
 
           {isLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-4 w-96" />
-              <Skeleton className="h-3 w-full" />
-            </div>
+            <div className="space-y-3"><Skeleton className="h-8 w-64" /><Skeleton className="h-4 w-96" /><Skeleton className="h-3 w-full" /></div>
           ) : (
             <div className="space-y-3">
               <div className="flex items-center gap-3">
@@ -175,7 +135,6 @@ export default function EstudosMateriaPage() {
                   {materia?.descricao && <p className="text-sm text-muted-foreground">{materia.descricao}</p>}
                 </div>
               </div>
-
               <div className="bg-card border border-border rounded-xl p-4 space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Progresso da matéria</span>
@@ -188,11 +147,8 @@ export default function EstudosMateriaPage() {
           )}
         </div>
 
-        {/* Módulos */}
         {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
-          </div>
+          <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}</div>
         ) : (modulos || []).length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
             <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
@@ -230,47 +186,26 @@ export default function EstudosMateriaPage() {
                       </div>
                     </div>
                   </AccordionTrigger>
-
                   <AccordionContent className="px-4 pb-3">
-                    <div className="mb-2">
-                      <Progress value={percent} className="h-1.5" />
-                    </div>
+                    <div className="mb-2"><Progress value={percent} className="h-1.5" /></div>
                     <div className="space-y-1">
                       {moduloConteudos.map((conteudo) => {
                         const isDone = !!completedMap.get(conteudo.id);
                         return (
-                          <div
-                            key={conteudo.id}
-                            className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors group"
-                          >
-                            <Checkbox
-                              checked={isDone}
-                              onCheckedChange={() => toggleConcluido.mutate(conteudo.id)}
-                              className="shrink-0"
-                            />
+                          <div key={conteudo.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors group">
+                            <Checkbox checked={isDone} onCheckedChange={() => toggleConcluido.mutate(conteudo.id)} className="shrink-0" />
                             {tipoIcon(conteudo.tipo)}
-                            <span className={`text-sm flex-1 truncate ${isDone ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                              {conteudo.titulo}
-                            </span>
+                            <span className={`text-sm flex-1 truncate ${isDone ? "line-through text-muted-foreground" : "text-foreground"}`}>{conteudo.titulo}</span>
                             {conteudo.duracao_minutos && (
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="h-3 w-3" /> {conteudo.duracao_minutos} min
-                              </span>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {conteudo.duracao_minutos} min</span>
                             )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => setSelectedConteudo(conteudo)}
-                            >
+                            <Button variant="ghost" size="sm" className="text-xs opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setSelectedConteudoId(conteudo.id)}>
                               Estudar
                             </Button>
                           </div>
                         );
                       })}
-                      {moduloConteudos.length === 0 && (
-                        <p className="text-xs text-muted-foreground py-3 text-center">Nenhum conteúdo disponível neste módulo</p>
-                      )}
+                      {moduloConteudos.length === 0 && <p className="text-xs text-muted-foreground py-3 text-center">Nenhum conteúdo disponível neste módulo</p>}
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -280,48 +215,11 @@ export default function EstudosMateriaPage() {
         )}
       </div>
 
-      {/* Content Viewer Modal */}
-      <Dialog open={!!selectedConteudo} onOpenChange={() => setSelectedConteudo(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {selectedConteudo && tipoIcon(selectedConteudo.tipo)}
-              {selectedConteudo?.titulo}
-            </DialogTitle>
-          </DialogHeader>
-
-          {selectedConteudo?.tipo === "video" && selectedConteudo.video_url && (
-            <div className="aspect-video rounded-lg overflow-hidden bg-black">
-              <iframe
-                src={selectedConteudo.video_url}
-                className="w-full h-full"
-                allowFullScreen
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              />
-            </div>
-          )}
-
-          {selectedConteudo?.tipo === "texto" && selectedConteudo.conteudo_texto && (
-            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: selectedConteudo.conteudo_texto }} />
-          )}
-
-          {selectedConteudo?.tipo === "pdf" && selectedConteudo.pdf_url && (
-            <iframe src={selectedConteudo.pdf_url} className="w-full h-[70vh] rounded-lg" />
-          )}
-
-          {selectedConteudo && (
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant={completedMap.get(selectedConteudo.id) ? "secondary" : "default"}
-                onClick={() => toggleConcluido.mutate(selectedConteudo.id)}
-              >
-                <CheckCircle2 className="h-4 w-4 mr-1" />
-                {completedMap.get(selectedConteudo.id) ? "Desmarcar conclusão" : "Marcar como concluído"}
-              </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <EstudarConteudoModal
+        conteudoId={selectedConteudoId}
+        open={!!selectedConteudoId}
+        onOpenChange={(open) => { if (!open) setSelectedConteudoId(null); }}
+      />
     </AppLayout>
   );
 }
