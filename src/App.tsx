@@ -9,6 +9,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { Loader2 } from "lucide-react";
+import ChatPetra from "@/components/ChatPetra";
 
 // Lazy loaded pages
 const Index = lazy(() => import("./pages/Index"));
@@ -93,6 +94,7 @@ const App = () => (
               </Routes>
             </Suspense>
           </BrowserRouter>
+          <ChatPetra />
         </ErrorBoundary>
       </TooltipProvider>
     </AuthProvider>
