@@ -47,10 +47,28 @@ Deno.serve(async (req) => {
     const levelPt = level === "easy" ? "FÁCIL" : level === "hard" ? "DIFÍCIL" : "MÉDIO";
 
     const count = 10;
-    const prompt = `Gere exatamente ${count} questões de concurso público no estilo banca CESGRANRIO para a matéria "${subject_name}".
-Nível: ${levelPt}. Lote ${batch_num}.
-Regras: enunciado contextualizado, 5 alternativas (A-E), gabarito e explicação. Estilo Cesgranrio. Varie tópicos.
-Retorne APENAS JSON array: [{"statement":"...","option_a":"...","option_b":"...","option_c":"...","option_d":"...","option_e":"...","correct_option":"A","explanation":"..."}]`;
+    const prompt = `Você é um especialista em elaboração de questões para concursos públicos da banca CESGRANRIO, especificamente para o concurso da Petrobras.
+
+MATÉRIA OBRIGATÓRIA: "${subject_name}"
+NÍVEL: ${levelPt}
+LOTE: ${batch_num}
+
+REGRA CRÍTICA: TODAS as ${count} questões DEVEM ser EXCLUSIVAMENTE sobre "${subject_name}". 
+- NÃO gere questões de outras matérias, áreas ou disciplinas.
+- Cada questão DEVE abordar um tópico/conceito específico de "${subject_name}".
+- O enunciado, as alternativas e a explicação devem estar 100% dentro do escopo de "${subject_name}".
+- Se a matéria for "Segurança do Trabalho", as questões devem ser sobre NRs, EPIs, CIPA, riscos ocupacionais, etc.
+- Se a matéria for "Língua Portuguesa", as questões devem ser sobre gramática, interpretação de texto, etc.
+- NUNCA misture conteúdos de outras disciplinas.
+
+FORMATO:
+- Enunciado contextualizado no estilo CESGRANRIO (situações práticas, casos, textos base quando aplicável)
+- 5 alternativas (A-E), apenas uma correta
+- Gabarito e explicação detalhada
+- Varie os tópicos DENTRO da matéria "${subject_name}"
+
+Retorne APENAS um JSON array válido, sem texto adicional:
+[{"statement":"...","option_a":"...","option_b":"...","option_c":"...","option_d":"...","option_e":"...","correct_option":"A","explanation":"..."}]`;
 
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiKey}`, {
       method: "POST",
