@@ -89,16 +89,56 @@ export default function MockExamsPage() {
     setStarting(exam.title);
 
     try {
-      // 1. Fetch random questions
+      // 1. Get user's track to filter questions by relevant subjects
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("track_id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!profile?.track_id) {
+        toast({ title: "Trilha não definida", description: "Selecione sua área de atuação no onboarding primeiro.", variant: "destructive" });
+        setStarting(null);
+        return;
+      }
+
+      // 2. Get subjects linked to user's track
+      const { data: trackSubjects } = await supabase
+        .from("track_subjects")
+        .select("subject_id")
+        .eq("track_id", profile.track_id);
+
+      const specificSubjectIds = (trackSubjects || []).map(ts => ts.subject_id);
+
+      // 3. Get general subjects (is_general = true) — these go to all students
+      const { data: generalSubjects } = await supabase
+        .from("subjects")
+        .select("id")
+        .eq("is_general", true)
+        .eq("active", true);
+
+      const generalSubjectIds = (generalSubjects || []).map(s => s.id);
+
+      // 4. Combine: general + track-specific subjects
+      const allSubjectIds = [...new Set([...generalSubjectIds, ...specificSubjectIds])];
+
+      if (allSubjectIds.length === 0) {
+        toast({ title: "Sem matérias configuradas", description: "Sua trilha ainda não possui matérias associadas.", variant: "destructive" });
+        setStarting(null);
+        return;
+      }
+
+      // 5. Fetch questions only from relevant subjects
       const { data: questions, error: qErr } = await supabase
         .from("questions")
         .select("id")
         .eq("active", true)
+        .in("subject_id", allSubjectIds)
         .limit(500);
 
       if (qErr) throw qErr;
       if (!questions || questions.length < exam.totalQuestions) {
-        toast({ title: "Questões insuficientes", description: `Apenas ${questions?.length || 0} questões disponíveis.`, variant: "destructive" });
+        toast({ title: "Questões insuficientes", description: `Apenas ${questions?.length || 0} questões disponíveis para sua trilha.`, variant: "destructive" });
         setStarting(null);
         return;
       }
