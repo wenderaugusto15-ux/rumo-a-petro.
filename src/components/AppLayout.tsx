@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/app" },
+  { icon: BookOpen, label: "Estudos", path: "/app/estudos" },
   { icon: BookOpen, label: "Questões", path: "/app/questoes" },
   { icon: Clock, label: "Simulados", path: "/app/simulados" },
   { icon: TrendingUp, label: "Desempenho", path: "/app/desempenho" },
