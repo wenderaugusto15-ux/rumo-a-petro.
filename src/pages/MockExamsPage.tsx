@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { Clock, BookOpen, Zap, ChevronRight, Trophy, Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 
@@ -37,6 +39,14 @@ const recentResults = [
 ];
 
 export default function MockExamsPage() {
+  const navigate = useNavigate();
+
+  const handleStartExam = (exam: typeof mockExamTypes[0]) => {
+    if (exam.locked) return;
+    toast({ title: `Iniciando ${exam.title}...`, description: "Preparando suas questões." });
+    // TODO: integrate with mock_exams table to actually create and start an exam
+  };
+
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
@@ -79,6 +89,7 @@ export default function MockExamsPage() {
               <Button
                 className={exam.locked ? "w-full bg-muted text-muted-foreground" : "w-full bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90"}
                 disabled={exam.locked}
+                onClick={() => handleStartExam(exam)}
               >
                 {exam.locked ? "Desbloquear" : "Iniciar"} <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
