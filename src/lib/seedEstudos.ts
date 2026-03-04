@@ -46,6 +46,9 @@ const MODULOS_DATA: Record<string, { titulo: string; descricao: string; ordem: n
     { titulo: "Atualidades Brasil", descricao: "Principais acontecimentos nacionais", ordem: 1 },
     { titulo: "Atualidades Mundo", descricao: "Cenário internacional e geopolítica", ordem: 2 },
     { titulo: "Meio Ambiente e Energia", descricao: "Sustentabilidade e matriz energética", ordem: 3 },
+    { titulo: "História do Brasil", descricao: "Períodos históricos e formação nacional", ordem: 4 },
+    { titulo: "Geografia do Brasil", descricao: "Aspectos físicos, econômicos e regionais", ordem: 5 },
+    { titulo: "Política Brasileira", descricao: "Sistema político e instituições", ordem: 6 },
   ],
   "Informática": [
     { titulo: "Windows e Linux", descricao: "Sistemas operacionais para concursos", ordem: 1 },
@@ -65,6 +68,9 @@ const MODULOS_DATA: Record<string, { titulo: string; descricao: string; ordem: n
     { titulo: "Python para Dados", descricao: "Pandas, NumPy e visualização", ordem: 3 },
     { titulo: "Machine Learning Básico", descricao: "Conceitos introdutórios de ML", ordem: 4 },
     { titulo: "SQL e Bancos de Dados", descricao: "Consultas e manipulação de dados", ordem: 5 },
+    { titulo: "Big Data", descricao: "Conceitos e tecnologias de big data", ordem: 6 },
+    { titulo: "Visualização de Dados", descricao: "Gráficos, dashboards e storytelling", ordem: 7 },
+    { titulo: "Inteligência Artificial", descricao: "Conceitos básicos de IA e aplicações", ordem: 8 },
   ],
   "Administração": [
     { titulo: "Teoria Geral da Administração", descricao: "Escolas administrativas e evolução do pensamento", ordem: 1 },
@@ -123,6 +129,26 @@ const MODULOS_DATA: Record<string, { titulo: string; descricao: string; ordem: n
     { titulo: "Equipamentos Rotativos", descricao: "Bombas, compressores, turbinas", ordem: 3 },
     { titulo: "Equipamentos Estáticos", descricao: "Vasos, torres, trocadores", ordem: 4 },
     { titulo: "Metrologia", descricao: "Instrumentos de medição e calibração", ordem: 5 },
+  ],
+  "Língua Inglesa": [
+    { titulo: "Interpretação de Textos", descricao: "Compreensão de textos técnicos em inglês", ordem: 1 },
+    { titulo: "Gramática Essencial", descricao: "Tempos verbais, preposições e conectivos", ordem: 2 },
+    { titulo: "Vocabulário Técnico", descricao: "Termos técnicos de petróleo e gás", ordem: 3 },
+    { titulo: "Inglês para Negócios", descricao: "Comunicação empresarial em inglês", ordem: 4 },
+  ],
+  "Meio Ambiente": [
+    { titulo: "Gestão Ambiental", descricao: "SGA, ISO 14001 e licenciamento", ordem: 1 },
+    { titulo: "Legislação Ambiental", descricao: "Leis e normas ambientais brasileiras", ordem: 2 },
+    { titulo: "Poluição e Controle", descricao: "Tipos de poluição e medidas de controle", ordem: 3 },
+    { titulo: "Sustentabilidade", descricao: "Desenvolvimento sustentável e ESG", ordem: 4 },
+    { titulo: "Emergências Ambientais", descricao: "Planos de contingência e resposta", ordem: 5 },
+  ],
+  "Segurança do Trabalho": [
+    { titulo: "NRs Essenciais", descricao: "NR-10, NR-12, NR-13, NR-20, NR-33, NR-35", ordem: 1 },
+    { titulo: "Prevenção de Acidentes", descricao: "Análise de riscos e medidas preventivas", ordem: 2 },
+    { titulo: "EPIs e EPCs", descricao: "Equipamentos de proteção individual e coletiva", ordem: 3 },
+    { titulo: "CIPA e SIPAT", descricao: "Comissão interna e semana de prevenção", ordem: 4 },
+    { titulo: "Primeiros Socorros", descricao: "Procedimentos básicos de emergência", ordem: 5 },
   ],
 };
 
