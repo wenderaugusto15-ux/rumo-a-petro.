@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import {
   BookOpen, Clock, TrendingUp, Zap, Target,
-  ChevronRight, Flame, Trophy, Medal, ArrowRight, Loader2
+  ChevronRight, Flame, Trophy, Medal, ArrowRight, Loader2,
+  GraduationCap, Play, Video, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -151,8 +152,47 @@ export default function Dashboard() {
             </Link>
           </motion.div>
 
-          {/* Questions Card */}
+          {/* Study Area Card */}
           <motion.div variants={fadeUp} custom={4} className="bg-card rounded-xl p-5 shadow-card border border-border hover:shadow-card-hover transition-shadow">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-xl bg-success/10 flex items-center justify-center">
+                <GraduationCap className="h-5 w-5 text-success" />
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground">Área de Estudos</h3>
+                <p className="text-xs text-muted-foreground">Videoaulas e materiais</p>
+              </div>
+            </div>
+            <div className="bg-muted rounded-xl p-3 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-success flex items-center justify-center shrink-0">
+                  <Play className="h-5 w-5 text-white ml-0.5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Continuar de onde parou</p>
+                  <p className="text-sm font-medium text-foreground truncate">Acesse suas aulas e materiais</p>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-primary/5 rounded-lg p-3 text-center">
+                <Video className="h-5 w-5 text-primary mx-auto mb-1" />
+                <div className="text-xs text-muted-foreground">Videoaulas</div>
+              </div>
+              <div className="bg-accent/5 rounded-lg p-3 text-center">
+                <FileText className="h-5 w-5 text-accent mx-auto mb-1" />
+                <div className="text-xs text-muted-foreground">PDFs e Resumos</div>
+              </div>
+            </div>
+            <Link to="/app/estudos">
+              <Button size="sm" className="w-full bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90">
+                Acessar Estudos <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            </Link>
+          </motion.div>
+
+          {/* Questions Card */}
+          <motion.div variants={fadeUp} custom={5} className="bg-card rounded-xl p-5 shadow-card border border-border hover:shadow-card-hover transition-shadow">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-10 w-10 rounded-xl bg-success/10 flex items-center justify-center">
                 <BookOpen className="h-5 w-5 text-success" />
@@ -180,7 +220,7 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Simulados Card */}
-          <motion.div variants={fadeUp} custom={5} className="bg-card rounded-xl p-5 shadow-card border border-border hover:shadow-card-hover transition-shadow">
+          <motion.div variants={fadeUp} custom={6} className="bg-card rounded-xl p-5 shadow-card border border-border hover:shadow-card-hover transition-shadow">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center">
                 <Clock className="h-5 w-5 text-accent" />
@@ -208,7 +248,7 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Performance Chart */}
-          <motion.div variants={fadeUp} custom={6} className="bg-card rounded-xl p-5 shadow-card border border-border sm:col-span-2 xl:col-span-2 hover:shadow-card-hover transition-shadow">
+          <motion.div variants={fadeUp} custom={7} className="bg-card rounded-xl p-5 shadow-card border border-border sm:col-span-2 xl:col-span-2 hover:shadow-card-hover transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -259,7 +299,7 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Gamification Card */}
-          <motion.div variants={fadeUp} custom={7} className="bg-card rounded-xl p-5 shadow-card border border-border hover:shadow-card-hover transition-shadow">
+          <motion.div variants={fadeUp} custom={8} className="bg-card rounded-xl p-5 shadow-card border border-border hover:shadow-card-hover transition-shadow">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center">
                 <Trophy className="h-5 w-5 text-accent" />
