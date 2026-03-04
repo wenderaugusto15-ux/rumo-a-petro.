@@ -132,11 +132,11 @@
   .shadow-card-hover {
     box-shadow: var(--shadow-card-hover);
   }
-  #lovable-badge {
-display: none !important;
-}
-
+ 
   .shadow-cta {
     box-shadow: var(--shadow-cta);
   }
+  
+ #lovable-badge {
+display: none !important;
 }
