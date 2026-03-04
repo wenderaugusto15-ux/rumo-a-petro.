@@ -20,13 +20,40 @@ export interface PerformanceData {
 }
 
 async function fetchPerformanceData(userId: string): Promise<PerformanceData> {
-  // Fetch all attempts with subject info and time
+  // Fetch question_attempts (prática avulsa)
   const { data: attempts } = await supabase
     .from("question_attempts")
     .select("is_correct, attempted_at, time_spent_seconds, question_id, questions(subject_id, subjects(name))")
     .eq("user_id", userId);
 
-  const allAttempts = attempts || [];
+  // Fetch mock_exam_answers (simulados)
+  const { data: mockExams } = await supabase
+    .from("mock_exams")
+    .select("id, started_at")
+    .eq("user_id", userId);
+
+  let mockAnswers: any[] = [];
+  if (mockExams && mockExams.length > 0) {
+    const examIds = mockExams.map(e => e.id);
+    const { data: answers } = await supabase
+      .from("mock_exam_answers")
+      .select("is_correct, time_spent_seconds, question_id, mock_exam_id, questions(subject_id, subjects(name))")
+      .in("mock_exam_id", examIds);
+
+    if (answers) {
+      const examDateMap = Object.fromEntries(mockExams.map(e => [e.id, e.started_at]));
+      mockAnswers = answers.map(a => ({
+        ...a,
+        attempted_at: examDateMap[a.mock_exam_id] || new Date().toISOString(),
+      }));
+    }
+  }
+
+  // Deduplicar: se a mesma questão aparece em ambos, preferir question_attempts
+  const attemptQuestionIds = new Set((attempts || []).map(a => a.question_id));
+  const uniqueMockAnswers = mockAnswers.filter(a => !attemptQuestionIds.has(a.question_id));
+
+  const allAttempts = [...(attempts || []), ...uniqueMockAnswers];
   const totalQuestions = allAttempts.length;
 
   // Overall accuracy
