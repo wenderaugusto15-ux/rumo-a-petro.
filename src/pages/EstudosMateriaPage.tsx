@@ -13,19 +13,23 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  ArrowLeft, Play, FileText, FileDown, BookOpen, Clock, FolderOpen,
+  ArrowLeft, Play, FileText, FileDown, BookOpen, Clock, FolderOpen, Lock,
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import EstudarConteudoModal from "@/components/EstudarConteudoModal";
+import UpgradeModal from "@/components/UpgradeModal";
+import { useSubscription } from "@/hooks/useSubscription";
 
 export default function EstudosMateriaPage() {
   const { materiaId } = useParams<{ materiaId: string }>();
   const { user } = useAuth();
+  const { isPro } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedConteudoId, setSelectedConteudoId] = useState<string | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const { data: materia, isLoading: loadingMateria } = useQuery({
     queryKey: ["materia", materiaId],
@@ -112,6 +116,14 @@ export default function EstudosMateriaPage() {
     return <Badge variant="secondary" className="text-xs">Não iniciado</Badge>;
   };
 
+  const handleConteudoClick = (conteudoId: string, ordemNoModulo: number) => {
+    if (!isPro && ordemNoModulo > 3) {
+      setShowUpgrade(true);
+    } else {
+      setSelectedConteudoId(conteudoId);
+    }
+  };
+
   const isLoading = loadingMateria || loadingModulos;
 
   return (
@@ -135,6 +147,26 @@ export default function EstudosMateriaPage() {
                   {materia?.descricao && <p className="text-sm text-muted-foreground">{materia.descricao}</p>}
                 </div>
               </div>
+
+              {/* Free user banner */}
+              {!isPro && (
+                <div className="bg-accent/10 border border-accent/20 rounded-xl p-4 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Lock className="h-5 w-5 text-accent shrink-0" />
+                    <p className="text-sm text-foreground">
+                      <span className="font-semibold">Plano gratuito:</span> 3 primeiras aulas de cada módulo liberadas.
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 shrink-0"
+                    onClick={() => navigate("/app/upgrade")}
+                  >
+                    Desbloquear tudo
+                  </Button>
+                </div>
+              )}
+
               <div className="bg-card border border-border rounded-xl p-4 space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Progresso da matéria</span>
@@ -167,6 +199,8 @@ export default function EstudosMateriaPage() {
               const total = moduloConteudos.length;
               const percent = total > 0 ? Math.round((done / total) * 100) : 0;
               const status = getModuloStatus(modulo.id);
+              const freeCount = Math.min(3, total);
+              const lockedCount = isPro ? 0 : Math.max(0, total - 3);
 
               return (
                 <AccordionItem key={modulo.id} value={modulo.id} className="border rounded-xl overflow-hidden">
@@ -180,6 +214,11 @@ export default function EstudosMateriaPage() {
                         {modulo.descricao && <p className="text-xs text-muted-foreground line-clamp-1">{modulo.descricao}</p>}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
+                        {!isPro && lockedCount > 0 && (
+                          <Badge className="bg-accent/15 text-accent border-accent/30 text-xs gap-1">
+                            <Lock className="h-3 w-3" /> {lockedCount}
+                          </Badge>
+                        )}
                         <Badge variant="outline" className="text-xs">{total} conteúdo{total !== 1 ? "s" : ""}</Badge>
                         {statusBadge(status)}
                         <span className="text-xs font-medium text-muted-foreground hidden sm:block">{percent}%</span>
@@ -188,20 +227,71 @@ export default function EstudosMateriaPage() {
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-3">
                     <div className="mb-2"><Progress value={percent} className="h-1.5" /></div>
+
+                    {/* Free indicator */}
+                    {!isPro && total > 3 && (
+                      <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                        ✅ {freeCount} aulas grátis · 🔒 {lockedCount} aula{lockedCount !== 1 ? "s" : ""} PRO
+                      </p>
+                    )}
+
                     <div className="space-y-1">
-                      {moduloConteudos.map((conteudo) => {
+                      {moduloConteudos.map((conteudo, idx) => {
+                        const ordemNoModulo = idx + 1;
                         const isDone = !!completedMap.get(conteudo.id);
+                        const isLocked = !isPro && ordemNoModulo > 3;
+
                         return (
-                          <div key={conteudo.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors group">
-                            <Checkbox checked={isDone} onCheckedChange={() => toggleConcluido.mutate(conteudo.id)} className="shrink-0" />
+                          <div
+                            key={conteudo.id}
+                            className={`flex items-center gap-3 p-2.5 rounded-lg transition-colors group ${
+                              isLocked
+                                ? "opacity-60 hover:bg-accent/5 cursor-pointer"
+                                : "hover:bg-muted/50"
+                            }`}
+                            onClick={isLocked ? () => setShowUpgrade(true) : undefined}
+                          >
+                            {isLocked ? (
+                              <Lock className="h-4 w-4 text-accent shrink-0" />
+                            ) : (
+                              <Checkbox
+                                checked={isDone}
+                                onCheckedChange={() => toggleConcluido.mutate(conteudo.id)}
+                                className="shrink-0"
+                              />
+                            )}
                             {tipoIcon(conteudo.tipo)}
-                            <span className={`text-sm flex-1 truncate ${isDone ? "line-through text-muted-foreground" : "text-foreground"}`}>{conteudo.titulo}</span>
+                            <span className={`text-sm flex-1 truncate ${
+                              isLocked
+                                ? "text-muted-foreground"
+                                : isDone
+                                  ? "line-through text-muted-foreground"
+                                  : "text-foreground"
+                            }`}>
+                              {conteudo.titulo}
+                            </span>
+
+                            {/* Badges */}
+                            {!isPro && ordemNoModulo <= 3 && (
+                              <Badge className="bg-green-500/15 text-green-600 border-green-500/30 text-[10px] px-1.5 py-0">GRÁTIS</Badge>
+                            )}
+                            {isLocked && (
+                              <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30 text-[10px] px-1.5 py-0">PRO</Badge>
+                            )}
+
                             {conteudo.duracao_minutos && (
                               <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {conteudo.duracao_minutos} min</span>
                             )}
-                            <Button variant="ghost" size="sm" className="text-xs opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setSelectedConteudoId(conteudo.id)}>
-                              Estudar
-                            </Button>
+                            {!isLocked && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => handleConteudoClick(conteudo.id, ordemNoModulo)}
+                              >
+                                Estudar
+                              </Button>
+                            )}
                           </div>
                         );
                       })}
@@ -220,6 +310,8 @@ export default function EstudosMateriaPage() {
         open={!!selectedConteudoId}
         onOpenChange={(open) => { if (!open) setSelectedConteudoId(null); }}
       />
+
+      <UpgradeModal open={showUpgrade} onOpenChange={setShowUpgrade} />
     </AppLayout>
   );
 }
