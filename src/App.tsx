@@ -18,6 +18,7 @@ const AuthPage = lazy(() => import("./pages/AuthPage"));
 const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const QuestionsPage = lazy(() => import("./pages/QuestionsPage"));
 const MockExamsPage = lazy(() => import("./pages/MockExamsPage"));
+const MockExamTakingPage = lazy(() => import("./pages/MockExamTakingPage"));
 const PerformancePage = lazy(() => import("./pages/PerformancePage"));
 const StudyPlanPage = lazy(() => import("./pages/StudyPlanPage"));
 const UpgradePage = lazy(() => import("./pages/UpgradePage"));
@@ -62,6 +63,7 @@ const App = () => (
                 <Route path="/app" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/app/questoes" element={<ProtectedRoute><QuestionsPage /></ProtectedRoute>} />
                 <Route path="/app/simulados" element={<ProtectedRoute><MockExamsPage /></ProtectedRoute>} />
+                <Route path="/app/simulado/:examId" element={<ProtectedRoute><MockExamTakingPage /></ProtectedRoute>} />
                 <Route path="/app/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
                 <Route path="/app/plano" element={<ProtectedRoute><StudyPlanPage /></ProtectedRoute>} />
                 <Route path="/app/upgrade" element={<ProtectedRoute><UpgradePage /></ProtectedRoute>} />
