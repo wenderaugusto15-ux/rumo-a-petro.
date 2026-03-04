@@ -14,17 +14,14 @@ export interface PetraMessage {
 const INITIAL_MESSAGE: PetraMessage = {
   id: "initial",
   role: "petra",
-  content: `Olá! 👋 Eu sou a **Petra**, sua assistente de estudos!
+  content: `Oi! 👋 Sou a Petra, sua assistente de estudos.
 
-Estou aqui para te ajudar na sua preparação para o concurso da Petrobras. Pode me perguntar sobre:
+Pode me perguntar sobre:
+• Dúvidas de matérias
+• Resolução de questões
+• Dicas de estudo
 
-📚 Dúvidas sobre matérias
-📝 Explicação de conceitos
-🧮 Resolução de questões passo a passo
-💡 Dicas de estudo e memorização
-🎯 Estratégias para a prova
-
-Como posso te ajudar hoje? 😊`,
+No que posso ajudar?`,
   timestamp: new Date(),
 };
 
