@@ -83,6 +83,47 @@ const MODULOS_DATA: Record<string, { titulo: string; descricao: string; ordem: n
     { titulo: "Contabilidade de Custos", descricao: "Custeio, formação de preços e análise", ordem: 2 },
     { titulo: "Análise de Balanços", descricao: "Indicadores financeiros e econômicos", ordem: 3 },
   ],
+  "Engenharia de Petróleo": [
+    { titulo: "Geologia do Petróleo", descricao: "Formação, migração e acumulação de hidrocarbonetos", ordem: 1 },
+    { titulo: "Perfuração", descricao: "Técnicas de perfuração e completação de poços", ordem: 2 },
+    { titulo: "Produção de Petróleo", descricao: "Métodos de elevação e recuperação", ordem: 3 },
+    { titulo: "Processamento", descricao: "Tratamento e refino de petróleo", ordem: 4 },
+    { titulo: "Reservatórios", descricao: "Caracterização e simulação de reservatórios", ordem: 5 },
+  ],
+  "Engenharia Elétrica": [
+    { titulo: "Circuitos Elétricos", descricao: "Análise de circuitos CC e CA", ordem: 1 },
+    { titulo: "Máquinas Elétricas", descricao: "Transformadores, motores e geradores", ordem: 2 },
+    { titulo: "Sistemas de Potência", descricao: "Geração, transmissão e distribuição", ordem: 3 },
+    { titulo: "Eletrônica de Potência", descricao: "Conversores e controladores", ordem: 4 },
+    { titulo: "Instrumentação", descricao: "Sensores, medição e controle", ordem: 5 },
+  ],
+  "Engenharia Mecânica": [
+    { titulo: "Mecânica dos Fluidos", descricao: "Estática e dinâmica dos fluidos", ordem: 1 },
+    { titulo: "Termodinâmica", descricao: "Leis da termodinâmica e ciclos", ordem: 2 },
+    { titulo: "Resistência dos Materiais", descricao: "Tensões, deformações e dimensionamento", ordem: 3 },
+    { titulo: "Elementos de Máquinas", descricao: "Engrenagens, eixos, rolamentos", ordem: 4 },
+    { titulo: "Transferência de Calor", descricao: "Condução, convecção e radiação", ordem: 5 },
+  ],
+  "Geologia": [
+    { titulo: "Geologia Geral", descricao: "Minerais, rochas e processos geológicos", ordem: 1 },
+    { titulo: "Geologia Estrutural", descricao: "Dobras, falhas e deformações", ordem: 2 },
+    { titulo: "Geologia Sedimentar", descricao: "Ambientes deposicionais e estratigrafia", ordem: 3 },
+    { titulo: "Geofísica", descricao: "Métodos sísmicos e perfilagem", ordem: 4 },
+  ],
+  "Técnico de Operação": [
+    { titulo: "Processos Industriais", descricao: "Operações unitárias e fluxogramas", ordem: 1 },
+    { titulo: "Instrumentação Industrial", descricao: "Malhas de controle e instrumentos", ordem: 2 },
+    { titulo: "Operação de Equipamentos", descricao: "Bombas, compressores, trocadores", ordem: 3 },
+    { titulo: "Segurança Operacional", descricao: "Procedimentos e análise de riscos", ordem: 4 },
+    { titulo: "Química Aplicada", descricao: "Fundamentos químicos para operação", ordem: 5 },
+  ],
+  "Técnico de Manutenção Mecânica": [
+    { titulo: "Manutenção Industrial", descricao: "Preventiva, preditiva e corretiva", ordem: 1 },
+    { titulo: "Lubrificação", descricao: "Tipos de lubrificantes e aplicações", ordem: 2 },
+    { titulo: "Equipamentos Rotativos", descricao: "Bombas, compressores, turbinas", ordem: 3 },
+    { titulo: "Equipamentos Estáticos", descricao: "Vasos, torres, trocadores", ordem: 4 },
+    { titulo: "Metrologia", descricao: "Instrumentos de medição e calibração", ordem: 5 },
+  ],
 };
 
 export async function seedMaterias(onLog: LogCallback): Promise<boolean> {
