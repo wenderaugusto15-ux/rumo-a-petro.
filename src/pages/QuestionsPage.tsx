@@ -525,7 +525,9 @@ export default function QuestionsPage() {
                       <Button variant="outline" size="sm" className="flex-1" onClick={handleReviewLater}>
                         <RotateCcw className="h-4 w-4 mr-1" /> Revisar depois
                       </Button>
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => {
+                        toast({ title: "Questão reportada ✅", description: "Obrigado pelo feedback! Vamos analisar." });
+                      }}>
                         <Flag className="h-4 w-4 mr-1" /> Reportar
                       </Button>
                     </div>

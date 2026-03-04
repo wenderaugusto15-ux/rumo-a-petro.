@@ -191,14 +191,14 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="space-y-2 mb-4">
-              <button className="w-full text-left p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
+              <Link to="/app/simulados" className="w-full text-left p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors block">
                 <div className="text-sm font-semibold text-foreground">Simulado Rápido</div>
                 <div className="text-xs text-muted-foreground">20 questões · ~30 min</div>
-              </button>
-              <button className="w-full text-left p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
+              </Link>
+              <Link to="/app/simulados" className="w-full text-left p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors block">
                 <div className="text-sm font-semibold text-foreground">Simulado Completo</div>
                 <div className="text-xs text-muted-foreground">Estilo Cesgranrio · ~4h</div>
-              </button>
+              </Link>
             </div>
             <Link to="/app/simulados">
               <Button variant="outline" size="sm" className="w-full">
