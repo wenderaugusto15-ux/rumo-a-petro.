@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { useChatPetra, PetraMessage } from "@/hooks/useChatPetra";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 const SUGGESTIONS = [
   "📚 Como estudar melhor?",
@@ -15,17 +15,17 @@ const SUGGESTIONS = [
   "💪 Preciso de motivação",
 ];
 
-type Corner = "bottom-right" | "bottom-left" | "top-right" | "top-left";
+interface Position { x: number; y: number }
 
 interface PetraPrefs {
-  corner: Corner;
+  buttonPos: Position | null;
   width: number;
   height: number;
   minimized: boolean;
 }
 
 const DEFAULT_PREFS: PetraPrefs = {
-  corner: "bottom-right",
+  buttonPos: null,
   width: 380,
   height: 500,
   minimized: false,
@@ -33,10 +33,28 @@ const DEFAULT_PREFS: PetraPrefs = {
 
 const MIN_W = 320, MIN_H = 400, MAX_W = 500, MAX_H = 700;
 const EXPANDED_W = 500, EXPANDED_H = 700;
+const BTN_SIZE = 60;
+const BTN_PADDING = 16;
+
+function getDefaultButtonPos(): Position {
+  return { x: window.innerWidth - BTN_SIZE - BTN_PADDING, y: window.innerHeight - BTN_SIZE - BTN_PADDING - 30 };
+}
+
+function snapToEdge(pos: Position): Position {
+  const snapThreshold = 50;
+  let x = pos.x, y = pos.y;
+  if (x < snapThreshold) x = BTN_PADDING;
+  else if (x > window.innerWidth - BTN_SIZE - snapThreshold) x = window.innerWidth - BTN_SIZE - BTN_PADDING;
+  if (y < snapThreshold) y = BTN_PADDING;
+  else if (y > window.innerHeight - BTN_SIZE - snapThreshold) y = window.innerHeight - BTN_SIZE - BTN_PADDING;
+  x = Math.max(BTN_PADDING, Math.min(x, window.innerWidth - BTN_SIZE - BTN_PADDING));
+  y = Math.max(BTN_PADDING, Math.min(y, window.innerHeight - BTN_SIZE - BTN_PADDING));
+  return { x, y };
+}
 
 function loadPrefs(): PetraPrefs {
   try {
-    const s = localStorage.getItem("petra_prefs");
+    const s = localStorage.getItem("petra_prefs_v2");
     if (!s) return DEFAULT_PREFS;
     return { ...DEFAULT_PREFS, ...JSON.parse(s) };
   } catch { return DEFAULT_PREFS; }
@@ -44,7 +62,7 @@ function loadPrefs(): PetraPrefs {
 
 function savePrefs(p: Partial<PetraPrefs>) {
   const current = loadPrefs();
-  localStorage.setItem("petra_prefs", JSON.stringify({ ...current, ...p }));
+  localStorage.setItem("petra_prefs_v2", JSON.stringify({ ...current, ...p }));
 }
 
 function useIsMobile() {
@@ -76,15 +94,14 @@ export default function ChatPetra() {
   const [expanded, setExpanded] = useState(false);
   const [panelSize, setPanelSize] = useState({ w: prefs.width, h: prefs.height });
 
-  // Drag state
-  const [dragging, setDragging] = useState(false);
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
-  const dragStart = useRef<{ x: number; y: number; bx: number; by: number } | null>(null);
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [dragReady, setDragReady] = useState(false);
+  // Button drag state
+  const [buttonPos, setButtonPos] = useState<Position>(() => prefs.buttonPos || getDefaultButtonPos());
+  const [btnDragging, setBtnDragging] = useState(false);
+  const [wasDragged, setWasDragged] = useState(false);
+  const btnDragStart = useRef<{ mx: number; my: number; bx: number; by: number } | null>(null);
 
   // Panel drag state
-  const [panelPos, setPanelPos] = useState<{ x: number; y: number } | null>(null);
+  const [panelPos, setPanelPos] = useState<Position | null>(null);
   const panelDragging = useRef(false);
   const panelDragStart = useRef<{ mx: number; my: number; px: number; py: number } | null>(null);
 
@@ -92,31 +109,76 @@ export default function ChatPetra() {
   const resizing = useRef(false);
   const resizeStart = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
 
+  // First-time tooltip
+  const [showDragHint, setShowDragHint] = useState(() => !localStorage.getItem("petra_drag_hint_shown"));
+
   // Save prefs on changes
-  useEffect(() => { savePrefs({ corner: prefs.corner }); }, [prefs.corner]);
+  useEffect(() => { savePrefs({ buttonPos }); }, [buttonPos]);
   useEffect(() => { savePrefs({ width: panelSize.w, height: panelSize.h }); }, [panelSize]);
   useEffect(() => { savePrefs({ minimized }); }, [minimized]);
 
+  // Dismiss drag hint after 5s
+  useEffect(() => {
+    if (showDragHint) {
+      const t = setTimeout(() => { setShowDragHint(false); localStorage.setItem("petra_drag_hint_shown", "1"); }, 5000);
+      return () => clearTimeout(t);
+    }
+  }, [showDragHint]);
+
   // Reset panel free position when chat closes
   useEffect(() => { if (!chatAberto) setPanelPos(null); }, [chatAberto]);
+
+  // Adjust button position on resize
+  useEffect(() => {
+    const h = () => setButtonPos(prev => snapToEdge(prev));
+    window.addEventListener("resize", h);
+    return () => window.removeEventListener("resize", h);
+  }, []);
 
   useEffect(() => {
     if (chatAberto && !minimized) inputRef.current?.focus();
   }, [chatAberto, minimized]);
 
-  // Corner positions for the button
-  const getButtonStyle = useCallback((): React.CSSProperties => {
-    if (isMobile || dragging && dragPos) {
-      if (dragPos && !isMobile) return { position: "fixed", left: dragPos.x, top: dragPos.y, zIndex: 9998 };
-    }
-    const c = prefs.corner;
-    const base: React.CSSProperties = { position: "fixed", zIndex: 9998 };
-    if (c.includes("bottom")) base.bottom = 24; else base.top = 24;
-    if (c.includes("right")) base.right = 24; else base.left = 24;
-    return base;
-  }, [prefs.corner, isMobile, dragging, dragPos]);
+  // Button style
+  const getButtonStyle = useCallback((): React.CSSProperties => ({
+    position: "fixed",
+    left: buttonPos.x,
+    top: buttonPos.y,
+    zIndex: 9998,
+    touchAction: "none",
+    userSelect: "none",
+  }), [buttonPos]);
 
-  // Panel position relative to button corner
+  // Button drag handlers (mouse + touch via pointer events)
+  const handleBtnPointerDown = useCallback((e: React.PointerEvent) => {
+    setWasDragged(false);
+    setBtnDragging(true);
+    btnDragStart.current = { mx: e.clientX, my: e.clientY, bx: buttonPos.x, by: buttonPos.y };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    e.preventDefault();
+  }, [buttonPos]);
+
+  const handleBtnPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!btnDragStart.current) return;
+    const dx = e.clientX - btnDragStart.current.mx;
+    const dy = e.clientY - btnDragStart.current.my;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) setWasDragged(true);
+    setButtonPos({ x: btnDragStart.current.bx + dx, y: btnDragStart.current.by + dy });
+  }, []);
+
+  const handleBtnPointerUp = useCallback(() => {
+    setBtnDragging(false);
+    btnDragStart.current = null;
+    setButtonPos(prev => snapToEdge(prev));
+    // Dismiss hint on first drag
+    if (showDragHint) { setShowDragHint(false); localStorage.setItem("petra_drag_hint_shown", "1"); }
+  }, [showDragHint]);
+
+  // Determine which side button is on for panel positioning
+  const buttonOnRight = buttonPos.x > window.innerWidth / 2;
+  const buttonOnBottom = buttonPos.y > window.innerHeight / 2;
+
+  // Panel position relative to button
   const getPanelStyle = useCallback((): React.CSSProperties => {
     if (isMobile) return {
       position: "fixed", bottom: 0, right: 0, left: 0, top: 0,
@@ -132,18 +194,24 @@ export default function ChatPetra() {
       style.left = panelPos.x;
       style.top = panelPos.y;
     } else {
-      const c = prefs.corner;
-      const gap = 80;
-      if (c.includes("bottom")) style.bottom = gap; else style.top = gap;
-      if (c.includes("right")) style.right = 24; else style.left = 24;
+      // Position panel near button
+      if (buttonOnRight) {
+        style.right = window.innerWidth - buttonPos.x - BTN_SIZE;
+      } else {
+        style.left = buttonPos.x;
+      }
+      if (buttonOnBottom) {
+        style.bottom = window.innerHeight - buttonPos.y + 10;
+      } else {
+        style.top = buttonPos.y + BTN_SIZE + 10;
+      }
     }
     return style;
-  }, [isMobile, panelSize, prefs.corner, minimized, expanded, panelPos]);
+  }, [isMobile, panelSize, minimized, expanded, panelPos, buttonPos, buttonOnRight, buttonOnBottom]);
 
   // Panel header drag handlers
   const handleHeaderPointerDown = useCallback((e: React.PointerEvent) => {
     if (isMobile) return;
-    // Don't drag if clicking buttons
     if ((e.target as HTMLElement).closest("button")) return;
     const panel = (e.currentTarget as HTMLElement).closest("[data-petra-panel]") as HTMLElement;
     if (!panel) return;
@@ -167,46 +235,6 @@ export default function ChatPetra() {
     panelDragStart.current = null;
   }, []);
 
-  // Drag handlers (desktop only)
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (isMobile) return;
-    const el = e.currentTarget as HTMLElement;
-    const rect = el.getBoundingClientRect();
-    dragStart.current = { x: e.clientX, y: e.clientY, bx: rect.left, by: rect.top };
-    longPressTimer.current = setTimeout(() => {
-      setDragReady(true);
-      setDragging(true);
-      setDragPos({ x: rect.left, y: rect.top });
-      el.setPointerCapture(e.pointerId);
-    }, 400);
-  }, [isMobile]);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragging || !dragStart.current) return;
-    const dx = e.clientX - dragStart.current.x;
-    const dy = e.clientY - dragStart.current.y;
-    setDragPos({ x: dragStart.current.bx + dx, y: dragStart.current.by + dy });
-  }, [dragging]);
-
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-    if (!dragging) {
-      setDragReady(false);
-      return;
-    }
-    // Snap to nearest corner
-    const cx = e.clientX;
-    const cy = e.clientY;
-    const midX = window.innerWidth / 2;
-    const midY = window.innerHeight / 2;
-    const corner: Corner = `${cy < midY ? "top" : "bottom"}-${cx < midX ? "left" : "right"}` as Corner;
-    setPrefs(p => ({ ...p, corner }));
-    setDragging(false);
-    setDragPos(null);
-    setDragReady(false);
-    dragStart.current = null;
-  }, [dragging]);
-
   // Resize handlers
   const handleResizePointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
@@ -218,13 +246,12 @@ export default function ChatPetra() {
 
   const handleResizePointerMove = useCallback((e: React.PointerEvent) => {
     if (!resizing.current || !resizeStart.current) return;
-    const c = prefs.corner;
-    const dx = (c.includes("right") ? -1 : 1) * (e.clientX - resizeStart.current.x);
-    const dy = (c.includes("bottom") ? -1 : 1) * (e.clientY - resizeStart.current.y);
+    const dx = (buttonOnRight ? -1 : 1) * (e.clientX - resizeStart.current.x);
+    const dy = (buttonOnBottom ? -1 : 1) * (e.clientY - resizeStart.current.y);
     const newW = Math.min(MAX_W, Math.max(MIN_W, resizeStart.current.w + dx));
     const newH = Math.min(MAX_H, Math.max(MIN_H, resizeStart.current.h + dy));
     setPanelSize({ w: newW, h: newH });
-  }, [prefs.corner]);
+  }, [buttonOnRight, buttonOnBottom]);
 
   const handleResizePointerUp = useCallback(() => {
     resizing.current = false;
@@ -262,29 +289,33 @@ export default function ChatPetra() {
     <>
       {/* Floating Button */}
       {!chatAberto && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <motion.button
-              onClick={() => { if (!dragging) toggleChat(); }}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerUp}
-              style={getButtonStyle()}
-              className="flex flex-col items-center gap-1 touch-none"
-              animate={dragging ? { scale: 0.9, opacity: 0.7 } : dragReady ? { scale: 1.1 } : { y: [0, -6, 0] }}
-              transition={dragging ? { duration: 0.1 } : { duration: 2, repeat: Infinity, repeatDelay: 8 }}
+        <div style={getButtonStyle()} className="flex flex-col items-center gap-1">
+          <motion.button
+            onClick={() => { if (!wasDragged) toggleChat(); }}
+            onPointerDown={handleBtnPointerDown}
+            onPointerMove={handleBtnPointerMove}
+            onPointerUp={handleBtnPointerUp}
+            onPointerCancel={handleBtnPointerUp}
+            className="touch-none"
+            animate={btnDragging ? { scale: 1.1, opacity: 0.8 } : { y: [0, -6, 0] }}
+            transition={btnDragging ? { duration: 0.1 } : { duration: 2, repeat: Infinity, repeatDelay: 8 }}
+          >
+            <div className="w-[60px] h-[60px] rounded-full bg-gradient-to-br from-[#0D47A1] to-[#1565C0] flex items-center justify-center shadow-xl hover:shadow-2xl transition-shadow text-white text-xl font-bold select-none cursor-grab active:cursor-grabbing">
+              <Sparkles className="h-6 w-6 pointer-events-none" />
+            </div>
+            <span className="text-[10px] font-semibold text-foreground/70 select-none pointer-events-none">Petra IA</span>
+          </motion.button>
+          {showDragHint && (
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="absolute -top-8 whitespace-nowrap bg-foreground text-background text-[10px] px-2 py-1 rounded shadow-lg"
             >
-              <div className="w-[60px] h-[60px] rounded-full bg-gradient-to-br from-[#0D47A1] to-[#1565C0] flex items-center justify-center shadow-xl hover:shadow-2xl transition-shadow text-white text-xl font-bold select-none">
-                <Sparkles className="h-6 w-6" />
-              </div>
-              <span className="text-[10px] font-semibold text-foreground/70 select-none">Petra IA</span>
-            </motion.button>
-          </TooltipTrigger>
-          <TooltipContent side={prefs.corner.includes("right") ? "left" : "right"}>
-            <p>{isMobile ? "Olá! Sou a Petra 💬" : "Segure e arraste para mover • Clique para abrir"}</p>
-          </TooltipContent>
-        </Tooltip>
+              💡 Arraste para mover!
+            </motion.div>
+          )}
+        </div>
       )}
 
       {/* Chat Panel */}
@@ -417,8 +448,8 @@ export default function ChatPetra() {
                     onPointerMove={handleResizePointerMove}
                     onPointerUp={handleResizePointerUp}
                     className={`absolute w-4 h-4 cursor-nwse-resize opacity-40 hover:opacity-80 transition-opacity ${
-                      prefs.corner.includes("right") ? "left-0" : "right-0"
-                    } ${prefs.corner.includes("bottom") ? "top-0" : "bottom-0"}`}
+                      buttonOnRight ? "left-0" : "right-0"
+                    } ${buttonOnBottom ? "top-0" : "bottom-0"}`}
                     style={{ touchAction: "none" }}
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="text-muted-foreground">
