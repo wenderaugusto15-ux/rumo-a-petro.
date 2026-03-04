@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   Target, Clock, TrendingUp, Award, Users, BookOpen,
   ChevronRight, Star, Zap, CheckCircle, HelpCircle, ChevronDown,
-  BarChart3, Shield, Flame
+  BarChart3, Shield, Flame, Bot, FileText, Video, RefreshCw, MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -42,6 +42,9 @@ const faqs = [
   { q: "Tem banco de questões?", a: "Sim. Nosso banco cresce constantemente com questões no estilo Cesgranrio, todas com gabarito comentado e classificação por matéria, assunto e dificuldade." },
   { q: "O que é 'padrão Cesgranrio'?", a: "A Cesgranrio tem um estilo próprio de elaborar questões — enunciados contextualizados, alternativas com pegadinhas sutis e foco em aplicação prática. Treinamos você exatamente para esse padrão." },
   { q: "Posso usar no celular?", a: "Absolutamente. A plataforma é 100% responsiva e otimizada para mobile, para você estudar de qualquer lugar." },
+  { q: "Como funciona a Petra IA?", a: "A Petra é sua tutora inteligente disponível 24h. Ela tira dúvidas, explica questões, sugere o que estudar e te mantém motivado. No plano gratuito você tem 5 perguntas por dia, no Premium é ilimitado." },
+  { q: "Posso cancelar quando quiser?", a: "Sim! Você pode cancelar sua assinatura a qualquer momento, sem burocracia. Seu acesso continua até o final do período já pago." },
+  { q: "Tem garantia?", a: "Sim! Oferecemos 7 dias de garantia incondicional. Se não gostar, devolvemos 100% do seu investimento." },
 ];
 
 const features = [
@@ -51,6 +54,12 @@ const features = [
   { icon: TrendingUp, title: "Análise Inteligente", desc: "Identifique seus pontos fracos e receba recomendações de foco." },
   { icon: Zap, title: "Gamificação", desc: "XP, medalhas e níveis para manter sua motivação alta." },
   { icon: Award, title: "Ranking", desc: "Compare seu desempenho com outros candidatos em tempo real." },
+  { icon: Users, title: "Área de Membros", desc: "Acesso completo a todos os materiais, videoaulas e recursos premium." },
+  { icon: Bot, title: "Petra - Tutora IA", desc: "Assistente inteligente 24h para tirar dúvidas e orientar seus estudos." },
+  { icon: FileText, title: "Material Completo", desc: "PDFs, resumos, mapas mentais e apostilas para download." },
+  { icon: Video, title: "Videoaulas HD", desc: "Aulas gravadas por especialistas em concursos Petrobras." },
+  { icon: RefreshCw, title: "Revisão Espaçada", desc: "Sistema que mostra o que revisar no momento certo para fixar o conteúdo." },
+  { icon: MessageSquare, title: "Comunidade", desc: "Conecte-se com outros candidatos e troque experiências." },
 ];
 
 // Countdown to exam date
@@ -235,7 +244,7 @@ export default function Index() {
               Uma plataforma completa que transforma sua preparação em um processo estratégico, mensurável e motivador.
             </motion.p>
           </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {features.map((f, i) => (
               <motion.div
                 key={f.title}
