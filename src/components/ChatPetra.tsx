@@ -83,6 +83,11 @@ export default function ChatPetra() {
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [dragReady, setDragReady] = useState(false);
 
+  // Panel drag state
+  const [panelPos, setPanelPos] = useState<{ x: number; y: number } | null>(null);
+  const panelDragging = useRef(false);
+  const panelDragStart = useRef<{ mx: number; my: number; px: number; py: number } | null>(null);
+
   // Resize state
   const resizing = useRef(false);
   const resizeStart = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -91,6 +96,9 @@ export default function ChatPetra() {
   useEffect(() => { savePrefs({ corner: prefs.corner }); }, [prefs.corner]);
   useEffect(() => { savePrefs({ width: panelSize.w, height: panelSize.h }); }, [panelSize]);
   useEffect(() => { savePrefs({ minimized }); }, [minimized]);
+
+  // Reset panel free position when chat closes
+  useEffect(() => { if (!chatAberto) setPanelPos(null); }, [chatAberto]);
 
   useEffect(() => {
     if (chatAberto && !minimized) inputRef.current?.focus();
@@ -116,16 +124,48 @@ export default function ChatPetra() {
     };
     const w = expanded ? EXPANDED_W : panelSize.w;
     const h = minimized ? 56 : (expanded ? EXPANDED_H : panelSize.h);
-    const c = prefs.corner;
     const style: React.CSSProperties = {
       position: "fixed", zIndex: 9999, width: w, height: h,
-      transition: "width 200ms ease, height 200ms ease",
+      transition: panelDragging.current ? "none" : "width 200ms ease, height 200ms ease",
     };
-    const gap = 80;
-    if (c.includes("bottom")) style.bottom = gap; else style.top = gap;
-    if (c.includes("right")) style.right = 24; else style.left = 24;
+    if (panelPos) {
+      style.left = panelPos.x;
+      style.top = panelPos.y;
+    } else {
+      const c = prefs.corner;
+      const gap = 80;
+      if (c.includes("bottom")) style.bottom = gap; else style.top = gap;
+      if (c.includes("right")) style.right = 24; else style.left = 24;
+    }
     return style;
-  }, [isMobile, panelSize, prefs.corner, minimized, expanded]);
+  }, [isMobile, panelSize, prefs.corner, minimized, expanded, panelPos]);
+
+  // Panel header drag handlers
+  const handleHeaderPointerDown = useCallback((e: React.PointerEvent) => {
+    if (isMobile) return;
+    // Don't drag if clicking buttons
+    if ((e.target as HTMLElement).closest("button")) return;
+    const panel = (e.currentTarget as HTMLElement).closest("[data-petra-panel]") as HTMLElement;
+    if (!panel) return;
+    const rect = panel.getBoundingClientRect();
+    panelDragging.current = true;
+    panelDragStart.current = { mx: e.clientX, my: e.clientY, px: rect.left, py: rect.top };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }, [isMobile]);
+
+  const handleHeaderPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!panelDragging.current || !panelDragStart.current) return;
+    const dx = e.clientX - panelDragStart.current.mx;
+    const dy = e.clientY - panelDragStart.current.my;
+    const newX = Math.max(0, Math.min(window.innerWidth - 200, panelDragStart.current.px + dx));
+    const newY = Math.max(0, Math.min(window.innerHeight - 56, panelDragStart.current.py + dy));
+    setPanelPos({ x: newX, y: newY });
+  }, []);
+
+  const handleHeaderPointerUp = useCallback(() => {
+    panelDragging.current = false;
+    panelDragStart.current = null;
+  }, []);
 
   // Drag handlers (desktop only)
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
@@ -256,11 +296,17 @@ export default function ChatPetra() {
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             style={getPanelStyle()}
+            data-petra-panel
             className="rounded-2xl shadow-2xl flex flex-col overflow-hidden bg-[#F8FAFC] border border-border max-sm:!rounded-none"
           >
-            {/* Header */}
+            {/* Header - draggable */}
             <div
-              className="bg-gradient-to-r from-[#0D47A1] to-[#1976D2] p-3 flex items-center gap-3 shrink-0 cursor-pointer select-none"
+              className="bg-gradient-to-r from-[#0D47A1] to-[#1976D2] p-3 flex items-center gap-3 shrink-0 select-none"
+              style={{ cursor: isMobile ? "default" : "grab", touchAction: "none" }}
+              onPointerDown={handleHeaderPointerDown}
+              onPointerMove={handleHeaderPointerMove}
+              onPointerUp={handleHeaderPointerUp}
+              onPointerCancel={handleHeaderPointerUp}
               onClick={() => minimized && setMinimized(false)}
             >
               <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-base">P</div>
