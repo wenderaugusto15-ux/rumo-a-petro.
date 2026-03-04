@@ -21,7 +21,7 @@ const MATERIAS_DATA = [
   { nome: "Engenharia Elétrica", descricao: "Circuitos, Sistemas de Potência e Eletromagnetismo", icone: "Zap", cor: "#EAB308", ordem: 11 },
   { nome: "Engenharia Mecânica", descricao: "Mecânica dos Fluidos, Termodinâmica e Resistência dos Materiais", icone: "Cog", cor: "#6366F1", ordem: 12 },
   { nome: "Geologia", descricao: "Geologia Geral, Sedimentar e Estrutural", icone: "Mountain", cor: "#84CC16", ordem: 13 },
-  { nome: "Língua Inglesa", descricao: "Inglês Técnico e Interpretação de Textos", icone: "Globe", cor: "#0EA5E9", ordem: 14 },
+  { nome: "Língua Inglesa", descricao: "Inglês Técnico e Interpretação de Textos em Inglês", icone: "Globe", cor: "#0EA5E9", ordem: 14 },
   { nome: "Meio Ambiente", descricao: "Gestão Ambiental, Sustentabilidade e Legislação", icone: "Leaf", cor: "#22C55E", ordem: 15 },
   { nome: "Segurança do Trabalho", descricao: "NRs, Prevenção de Acidentes e Saúde Ocupacional", icone: "ShieldCheck", cor: "#EF4444", ordem: 16 },
   { nome: "Técnico de Manutenção Mecânica", descricao: "Manutenção Industrial, Lubrificação e Equipamentos", icone: "Wrench", cor: "#78716C", ordem: 17 },
@@ -65,6 +65,23 @@ const MODULOS_DATA: Record<string, { titulo: string; descricao: string; ordem: n
     { titulo: "Python para Dados", descricao: "Pandas, NumPy e visualização", ordem: 3 },
     { titulo: "Machine Learning Básico", descricao: "Conceitos introdutórios de ML", ordem: 4 },
     { titulo: "SQL e Bancos de Dados", descricao: "Consultas e manipulação de dados", ordem: 5 },
+  ],
+  "Administração": [
+    { titulo: "Teoria Geral da Administração", descricao: "Escolas administrativas e evolução do pensamento", ordem: 1 },
+    { titulo: "Gestão de Pessoas", descricao: "Recrutamento, seleção, treinamento e desenvolvimento", ordem: 2 },
+    { titulo: "Gestão de Processos", descricao: "Mapeamento, análise e melhoria de processos", ordem: 3 },
+    { titulo: "Comportamento Organizacional", descricao: "Cultura, clima e motivação nas organizações", ordem: 4 },
+    { titulo: "Planejamento Estratégico", descricao: "Missão, visão, valores e análise SWOT", ordem: 5 },
+  ],
+  "Atualidades": [
+    { titulo: "Brasil Atual", descricao: "Política, economia e sociedade brasileira", ordem: 1 },
+    { titulo: "Cenário Internacional", descricao: "Geopolítica e relações internacionais", ordem: 2 },
+    { titulo: "Petróleo e Energia", descricao: "Mercado de petróleo e matriz energética", ordem: 3 },
+  ],
+  "Contabilidade": [
+    { titulo: "Contabilidade Geral", descricao: "Princípios contábeis e demonstrações financeiras", ordem: 1 },
+    { titulo: "Contabilidade de Custos", descricao: "Custeio, formação de preços e análise", ordem: 2 },
+    { titulo: "Análise de Balanços", descricao: "Indicadores financeiros e econômicos", ordem: 3 },
   ],
 };
 
