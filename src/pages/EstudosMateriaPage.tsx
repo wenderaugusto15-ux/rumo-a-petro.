@@ -7,11 +7,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
-  ArrowLeft, ChevronDown, Video, FileText, BookOpen,
-  CheckCircle2, Circle, Play, Clock
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  ArrowLeft, Play, FileText, FileDown, BookOpen,
+  CheckCircle2, Clock, FolderOpen,
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -23,7 +27,6 @@ export default function EstudosMateriaPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedConteudo, setSelectedConteudo] = useState<any>(null);
-  const [openModulos, setOpenModulos] = useState<Set<string>>(new Set());
 
   const { data: materia, isLoading: loadingMateria } = useQuery({
     queryKey: ["materia", materiaId],
@@ -83,7 +86,7 @@ export default function EstudosMateriaPage() {
     enabled: !!user && !!conteudos && conteudos.length > 0,
   });
 
-  const completedMap = new Map((progresso || []).map(p => [p.conteudo_id, p.concluido]));
+  const completedMap = new Map((progresso || []).map(p => [p.conteudo_id, !!p.concluido]));
 
   const toggleConcluido = useMutation({
     mutationFn: async (conteudoId: string) => {
@@ -91,7 +94,10 @@ export default function EstudosMateriaPage() {
       if (existing) {
         await supabase
           .from("progresso_estudo")
-          .update({ concluido: !existing.concluido, data_conclusao: !existing.concluido ? new Date().toISOString() : null })
+          .update({
+            concluido: !existing.concluido,
+            data_conclusao: !existing.concluido ? new Date().toISOString() : null,
+          })
           .eq("id", existing.id);
       } else {
         await supabase.from("progresso_estudo").insert({
@@ -110,116 +116,167 @@ export default function EstudosMateriaPage() {
     },
   });
 
-  const toggleModulo = (id: string) => {
-    setOpenModulos(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
   const tipoIcon = (tipo: string) => {
-    if (tipo === "video") return <Video className="h-4 w-4 text-red-500" />;
-    if (tipo === "pdf") return <FileText className="h-4 w-4 text-orange-500" />;
-    return <BookOpen className="h-4 w-4 text-primary" />;
+    if (tipo === "video") return <Play className="h-4 w-4 text-red-500" />;
+    if (tipo === "pdf") return <FileDown className="h-4 w-4 text-accent" />;
+    return <FileText className="h-4 w-4 text-primary" />;
   };
 
   const cor = materia?.cor || "#1e3a5f";
+
+  // Overall materia progress
+  const allConteudoIds = (conteudos || []).map(c => c.id);
+  const totalDone = allConteudoIds.filter(id => completedMap.get(id)).length;
+  const totalAll = allConteudoIds.length;
+  const overallPercent = totalAll > 0 ? Math.round((totalDone / totalAll) * 100) : 0;
+
+  const getModuloStatus = (moduloId: string) => {
+    const mc = (conteudos || []).filter(c => c.modulo_id === moduloId);
+    if (mc.length === 0) return "empty";
+    const done = mc.filter(c => completedMap.get(c.id)).length;
+    if (done === mc.length) return "done";
+    if (done > 0) return "in_progress";
+    return "not_started";
+  };
+
+  const statusBadge = (status: string) => {
+    if (status === "done")
+      return <Badge className="bg-green-500/15 text-green-600 border-green-500/30 text-xs">Concluído</Badge>;
+    if (status === "in_progress")
+      return <Badge className="bg-yellow-500/15 text-yellow-600 border-yellow-500/30 text-xs">Em andamento</Badge>;
+    return <Badge variant="secondary" className="text-xs">Não iniciado</Badge>;
+  };
+
+  const isLoading = loadingMateria || loadingModulos;
 
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/app/estudos")}>
-            <ArrowLeft className="h-5 w-5" />
+        <div className="space-y-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/app/estudos")} className="gap-2 text-muted-foreground">
+            <ArrowLeft className="h-4 w-4" /> Voltar para Estudos
           </Button>
-          {loadingMateria ? (
-            <Skeleton className="h-8 w-48" />
+
+          {isLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-96" />
+              <Skeleton className="h-3 w-full" />
+            </div>
           ) : (
-            <div>
-              <h1 className="text-xl font-bold text-foreground">{materia?.nome}</h1>
-              {materia?.descricao && <p className="text-sm text-muted-foreground">{materia.descricao}</p>}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${cor}15` }}>
+                  <BookOpen className="h-5 w-5" style={{ color: cor }} />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">{materia?.nome}</h1>
+                  {materia?.descricao && <p className="text-sm text-muted-foreground">{materia.descricao}</p>}
+                </div>
+              </div>
+
+              <div className="bg-card border border-border rounded-xl p-4 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Progresso da matéria</span>
+                  <span className="font-semibold">{totalDone} de {totalAll} concluídos</span>
+                </div>
+                <Progress value={overallPercent} className="h-3" />
+                <p className="text-xs text-muted-foreground text-right">{overallPercent}%</p>
+              </div>
             </div>
           )}
         </div>
 
         {/* Módulos */}
-        {loadingModulos ? (
+        {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
           </div>
+        ) : (modulos || []).length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+            <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
+              <FolderOpen className="h-10 w-10 text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">Nenhum módulo cadastrado ainda</h3>
+              <p className="text-sm text-muted-foreground mt-1">Os módulos serão adicionados em breve.</p>
+            </div>
+          </div>
         ) : (
-          <div className="space-y-3">
+          <Accordion type="multiple" className="space-y-3">
             {(modulos || []).map((modulo) => {
               const moduloConteudos = (conteudos || []).filter(c => c.modulo_id === modulo.id);
               const done = moduloConteudos.filter(c => completedMap.get(c.id)).length;
               const total = moduloConteudos.length;
               const percent = total > 0 ? Math.round((done / total) * 100) : 0;
-              const isOpen = openModulos.has(modulo.id);
+              const status = getModuloStatus(modulo.id);
 
               return (
-                <Collapsible key={modulo.id} open={isOpen} onOpenChange={() => toggleModulo(modulo.id)}>
-                  <Card className="border" style={{ borderColor: isOpen ? cor : undefined }}>
-                    <CollapsibleTrigger className="w-full">
-                      <CardContent className="p-4 flex items-center gap-3">
-                        <div
-                          className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: `${cor}15` }}
-                        >
-                          <BookOpen className="h-4 w-4" style={{ color: cor }} />
-                        </div>
-                        <div className="flex-1 text-left min-w-0">
-                          <p className="font-semibold text-sm text-foreground truncate">{modulo.titulo}</p>
-                          <p className="text-xs text-muted-foreground">{done}/{total} concluídos • {percent}%</p>
-                        </div>
-                        <Progress value={percent} className="h-2 w-20 hidden sm:block" />
-                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
-                      </CardContent>
-                    </CollapsibleTrigger>
+                <AccordionItem key={modulo.id} value={modulo.id} className="border rounded-xl overflow-hidden">
+                  <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/30">
+                    <div className="flex items-center gap-3 flex-1 text-left">
+                      <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${cor}15` }}>
+                        <BookOpen className="h-4 w-4" style={{ color: cor }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-foreground truncate">{modulo.titulo}</p>
+                        {modulo.descricao && <p className="text-xs text-muted-foreground line-clamp-1">{modulo.descricao}</p>}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Badge variant="outline" className="text-xs">{total} conteúdo{total !== 1 ? "s" : ""}</Badge>
+                        {statusBadge(status)}
+                        <span className="text-xs font-medium text-muted-foreground hidden sm:block">{percent}%</span>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
 
-                    <CollapsibleContent>
-                      <div className="px-4 pb-4 space-y-1">
-                        {moduloConteudos.map((conteudo) => {
-                          const isDone = !!completedMap.get(conteudo.id);
-                          return (
-                            <div
-                              key={conteudo.id}
-                              className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group"
+                  <AccordionContent className="px-4 pb-3">
+                    <div className="mb-2">
+                      <Progress value={percent} className="h-1.5" />
+                    </div>
+                    <div className="space-y-1">
+                      {moduloConteudos.map((conteudo) => {
+                        const isDone = !!completedMap.get(conteudo.id);
+                        return (
+                          <div
+                            key={conteudo.id}
+                            className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors group"
+                          >
+                            <Checkbox
+                              checked={isDone}
+                              onCheckedChange={() => toggleConcluido.mutate(conteudo.id)}
+                              className="shrink-0"
+                            />
+                            {tipoIcon(conteudo.tipo)}
+                            <span className={`text-sm flex-1 truncate ${isDone ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                              {conteudo.titulo}
+                            </span>
+                            {conteudo.duracao_minutos && (
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="h-3 w-3" /> {conteudo.duracao_minutos} min
+                              </span>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                               onClick={() => setSelectedConteudo(conteudo)}
                             >
-                              <button
-                                onClick={(e) => { e.stopPropagation(); toggleConcluido.mutate(conteudo.id); }}
-                                className="shrink-0"
-                              >
-                                {isDone
-                                  ? <CheckCircle2 className="h-5 w-5 text-green-500" />
-                                  : <Circle className="h-5 w-5 text-muted-foreground/50" />
-                                }
-                              </button>
-                              {tipoIcon(conteudo.tipo)}
-                              <span className={`text-sm flex-1 truncate ${isDone ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                                {conteudo.titulo}
-                              </span>
-                              {conteudo.duracao_minutos && (
-                                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                  <Clock className="h-3 w-3" /> {conteudo.duracao_minutos}min
-                                </span>
-                              )}
-                              <Play className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                          );
-                        })}
-                        {moduloConteudos.length === 0 && (
-                          <p className="text-xs text-muted-foreground py-2 text-center">Nenhum conteúdo disponível</p>
-                        )}
-                      </div>
-                    </CollapsibleContent>
-                  </Card>
-                </Collapsible>
+                              Estudar
+                            </Button>
+                          </div>
+                        );
+                      })}
+                      {moduloConteudos.length === 0 && (
+                        <p className="text-xs text-muted-foreground py-3 text-center">Nenhum conteúdo disponível neste módulo</p>
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
               );
             })}
-          </div>
+          </Accordion>
         )}
       </div>
 
@@ -253,11 +310,12 @@ export default function EstudosMateriaPage() {
           )}
 
           {selectedConteudo && (
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end gap-2 pt-2">
               <Button
                 variant={completedMap.get(selectedConteudo.id) ? "secondary" : "default"}
                 onClick={() => toggleConcluido.mutate(selectedConteudo.id)}
               >
+                <CheckCircle2 className="h-4 w-4 mr-1" />
                 {completedMap.get(selectedConteudo.id) ? "Desmarcar conclusão" : "Marcar como concluído"}
               </Button>
             </div>
