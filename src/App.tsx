@@ -33,6 +33,7 @@ const AdminTestimonialsPage = lazy(() => import("./pages/admin/AdminTestimonials
 const AdminConfigPage = lazy(() => import("./pages/admin/AdminConfigPage"));
 const AdminPlansPage = lazy(() => import("./pages/admin/AdminPlansPage"));
 const AdminEstudosPage = lazy(() => import("./pages/admin/AdminEstudosPage"));
+const AdminSeedEstudosPage = lazy(() => import("./pages/admin/AdminSeedEstudosPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -83,6 +84,7 @@ const App = () => (
                 <Route path="/admin/config" element={<AdminRoute><AdminConfigPage /></AdminRoute>} />
                 <Route path="/admin/planos" element={<AdminRoute><AdminPlansPage /></AdminRoute>} />
                 <Route path="/admin/estudos" element={<AdminRoute><AdminEstudosPage /></AdminRoute>} />
+                <Route path="/admin/seed-estudos" element={<AdminRoute><AdminSeedEstudosPage /></AdminRoute>} />
 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
