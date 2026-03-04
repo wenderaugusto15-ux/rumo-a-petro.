@@ -305,6 +305,65 @@ const VIDEO_DATA: ModuloGroup[] = [
       { titulo: "NR 05 CIPA - Questão Cesgranrio", url: "https://www.youtube.com/watch?v=dPrvfmQHeD8", duracao: 6, descricao: "Resolução de questão sobre CIPA da Cesgranrio" },
     ],
   },
+  // === Administração ===
+  {
+    materiaNome: "Administração",
+    materiaDescricao: "Teoria Geral da Administração, Gestão de Pessoas e Processos",
+    materiaIcone: "BookOpen",
+    materiaCor: "#8B5CF6",
+    moduloTitulo: "Teoria Geral da Administração",
+    moduloDescricao: "Escolas administrativas e evolução do pensamento",
+    videos: [
+      { titulo: "Administração para Concursos - Domine e Gabarite", url: "https://www.youtube.com/watch?v=eUoH7Poesbo", duracao: 87, descricao: "Aula completa de administração com Prof. Giovanna Carranza" },
+    ],
+  },
+  {
+    materiaNome: "Administração",
+    materiaDescricao: "Teoria Geral da Administração, Gestão de Pessoas e Processos",
+    materiaIcone: "BookOpen",
+    materiaCor: "#8B5CF6",
+    moduloTitulo: "Gestão de Pessoas",
+    moduloDescricao: "Recrutamento, seleção, treinamento e desenvolvimento",
+    videos: [
+      { titulo: "Administração Pública - Reta Final", url: "https://www.youtube.com/watch?v=iJ35sP9bsJM", duracao: 225, descricao: "Revisão de administração pública incluindo gestão de pessoas" },
+    ],
+  },
+  {
+    materiaNome: "Administração",
+    materiaDescricao: "Teoria Geral da Administração, Gestão de Pessoas e Processos",
+    materiaIcone: "BookOpen",
+    materiaCor: "#8B5CF6",
+    moduloTitulo: "Planejamento Estratégico",
+    moduloDescricao: "Missão, visão, valores e análise SWOT",
+    videos: [
+      { titulo: "Administração Geral e Pública", url: "https://www.youtube.com/watch?v=yTYVEVRxzjE", duracao: 213, descricao: "Reta final incluindo planejamento estratégico" },
+    ],
+  },
+  // === Atualidades ===
+  {
+    materiaNome: "Atualidades",
+    materiaDescricao: "Acontecimentos atuais do Brasil e do Mundo",
+    materiaIcone: "Newspaper",
+    materiaCor: "#EC4899",
+    moduloTitulo: "Petróleo e Energia",
+    moduloDescricao: "Mercado de petróleo e matriz energética",
+    videos: [
+      { titulo: "Concurso Petrobras - Planejamento de Estudos", url: "https://www.youtube.com/watch?v=9C_I7_oXUUg", duracao: 104, descricao: "Panorama do concurso e setor de petróleo" },
+      { titulo: "Tudo sobre Concurso Petrobras 2025", url: "https://www.youtube.com/watch?v=xcRaxhxtO_o", duracao: 27, descricao: "Informações completas sobre o concurso" },
+    ],
+  },
+  // === Contabilidade ===
+  {
+    materiaNome: "Contabilidade",
+    materiaDescricao: "Contabilidade Geral, Custos e Análise de Balanços",
+    materiaIcone: "Calculator",
+    materiaCor: "#14B8A6",
+    moduloTitulo: "Contabilidade Geral",
+    moduloDescricao: "Princípios contábeis e demonstrações financeiras",
+    videos: [
+      { titulo: "Noções de Contabilidade para Concursos", url: "https://www.youtube.com/watch?v=-QKykj4-99g", duracao: 194, descricao: "Administração pública incluindo noções contábeis" },
+    ],
+  },
 ];
 
 async function ensureMateria(
