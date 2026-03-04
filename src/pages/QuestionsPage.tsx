@@ -4,6 +4,7 @@ import {
   BookOpen, Star, CheckCircle, XCircle,
   ChevronRight, Heart, RotateCcw, Flag, Loader2, Crown, Lock, Filter
 } from "lucide-react";
+import { openCheckout } from "@/lib/checkoutLinks";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
@@ -389,18 +390,24 @@ export default function QuestionsPage() {
               Você respondeu suas <span className="font-bold text-foreground">{dailyLimit} questões</span> gratuitas de hoje. Desbloqueie acesso ilimitado com o plano PRO.
             </p>
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-muted/50 rounded-xl p-4 border border-border">
+              <button
+                onClick={() => openCheckout("mensal", user?.id)}
+                className="bg-muted/50 rounded-xl p-4 border border-border hover:border-accent/50 hover:shadow-md transition-all cursor-pointer text-left"
+              >
                 <p className="text-2xl font-black text-foreground">R$ 47<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
                 <p className="text-xs text-muted-foreground mt-1">Mensal</p>
-              </div>
-              <div className="bg-accent/5 rounded-xl p-4 border border-accent/30 relative">
+              </button>
+              <button
+                onClick={() => openCheckout("semestral", user?.id)}
+                className="bg-accent/5 rounded-xl p-4 border border-accent/30 relative hover:border-accent hover:shadow-md transition-all cursor-pointer text-left"
+              >
                 <div className="absolute -top-2 right-2 bg-success text-white text-[10px] font-bold px-2 py-0.5 rounded-full">-17%</div>
                 <p className="text-2xl font-black text-foreground">R$ 297<span className="text-sm font-normal text-muted-foreground">/sem</span></p>
                 <p className="text-xs text-muted-foreground mt-1">Semestral</p>
-              </div>
+              </button>
             </div>
             <Button
-              onClick={() => navigate("/app/upgrade")}
+              onClick={() => openCheckout("semestral", user?.id)}
               className="w-full bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 text-base py-6"
               size="lg"
             >

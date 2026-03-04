@@ -1,9 +1,12 @@
 import { useAcesso } from "@/hooks/useAcesso";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
+import { openCheckout } from "@/lib/checkoutLinks";
 
 export default function UpgradeBanner() {
   const { isPremium, irParaPlanos } = useAcesso();
+  const { user } = useAuth();
 
   if (isPremium) return null;
 
@@ -18,9 +21,9 @@ export default function UpgradeBanner() {
       <Button
         size="sm"
         className="bg-amber-500 hover:bg-amber-600 text-white shrink-0"
-        onClick={irParaPlanos}
+        onClick={() => openCheckout("semestral", user?.id)}
       >
-        Ver Planos
+        Assinar PRO
       </Button>
     </div>
   );
