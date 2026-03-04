@@ -188,3 +188,100 @@ export async function seedConteudos(onLog: LogCallback): Promise<boolean> {
   onLog({ message: `\nConteúdos: ${created} criados, ${skipped} já existiam`, type: "info" });
   return true;
 }
+
+function extractYouTubeId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  return match ? match[1] : null;
+}
+
+const VIDEO_CONTEUDOS: { moduloTitulo: string; videos: { titulo: string; descricao: string; url: string; duracao: number }[] }[] = [
+  {
+    moduloTitulo: "Interpretação de Texto",
+    videos: [
+      { titulo: "Interpretação de Textos - Guia COMPLETO", descricao: "Aula completa sobre técnicas de interpretação de texto para concursos", url: "https://www.youtube.com/watch?v=OxTNN-IKcEQ", duracao: 14 },
+      { titulo: "Compreensão e Interpretação - Dicas Imprescindíveis", descricao: "Diferença entre compreender e interpretar textos", url: "https://www.youtube.com/watch?v=45thlAoGOGU", duracao: 13 },
+      { titulo: "Informações Literais e Inferências", descricao: "Como identificar informações explícitas e implícitas no texto", url: "https://www.youtube.com/watch?v=O2c8_hjIJks", duracao: 22 },
+    ],
+  },
+  {
+    moduloTitulo: "Razão e Proporção",
+    videos: [
+      { titulo: "Matemática Petrobras - Cesgranrio Sem Travar", descricao: "O que mais cai na Petrobras: porcentagem, proporção e gráficos", url: "https://www.youtube.com/watch?v=OvfSzqWzNME", duracao: 18 },
+      { titulo: "Resolução Prova Transpetro 2018 - Matemática", descricao: "Resolução completa da prova de matemática nível técnico", url: "https://www.youtube.com/watch?v=zRlIKk--gBs", duracao: 103 },
+    ],
+  },
+  {
+    moduloTitulo: "Porcentagem",
+    videos: [
+      { titulo: "Matemática para Petrobras - Banca Cesgranrio", descricao: "Tópicos mais recorrentes: porcentagem, regra de três e estatística", url: "https://www.youtube.com/watch?v=INSIRA_VIDEO_ID", duracao: 30 },
+    ],
+  },
+  {
+    moduloTitulo: "Fundamentos de Administração",
+    videos: [
+      { titulo: "Concurso Petrobras 2025 - Tudo que você precisa saber", descricao: "Informações completas sobre o concurso, cargos e preparação", url: "https://www.youtube.com/watch?v=xcRaxhxtO_o", duracao: 27 },
+    ],
+  },
+];
+
+export async function seedVideoConteudos(onLog: LogCallback): Promise<boolean> {
+  onLog({ message: "\nIniciando seed de conteúdos de vídeo...", type: "info" });
+  let created = 0;
+  let skipped = 0;
+
+  const { data: modulos } = await supabase.from("modulos").select("id, titulo");
+  if (!modulos || modulos.length === 0) {
+    onLog({ message: "❌ Nenhum módulo encontrado. Execute o seed de módulos primeiro.", type: "error" });
+    return false;
+  }
+
+  const moduloMap = new Map(modulos.map((m) => [m.titulo, m.id]));
+
+  for (const group of VIDEO_CONTEUDOS) {
+    const moduloId = moduloMap.get(group.moduloTitulo);
+    if (!moduloId) {
+      onLog({ message: `⚠️ Módulo "${group.moduloTitulo}" não encontrado, pulando...`, type: "error" });
+      continue;
+    }
+
+    for (let i = 0; i < group.videos.length; i++) {
+      const video = group.videos[i];
+      const videoId = extractYouTubeId(video.url);
+
+      const { data: existing } = await supabase
+        .from("conteudos")
+        .select("id")
+        .eq("modulo_id", moduloId)
+        .eq("video_url", video.url)
+        .maybeSingle();
+
+      if (existing) {
+        onLog({ message: `⏭️ Vídeo "${video.titulo}" já existe`, type: "info" });
+        skipped++;
+        continue;
+      }
+
+      const { error } = await supabase.from("conteudos").insert({
+        modulo_id: moduloId,
+        titulo: video.titulo,
+        descricao: video.descricao,
+        tipo: "video",
+        video_url: video.url,
+        video_thumbnail: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null,
+        duracao_minutos: video.duracao,
+        ordem: i + 10, // offset to not clash with text content at ordem=1
+        ativo: true,
+      });
+
+      if (error) {
+        onLog({ message: `❌ Erro ao criar vídeo "${video.titulo}": ${error.message}`, type: "error" });
+        return false;
+      }
+      onLog({ message: `✅ Vídeo "${video.titulo}" criado em "${group.moduloTitulo}"`, type: "success" });
+      created++;
+    }
+  }
+
+  onLog({ message: `\nVídeos: ${created} criados, ${skipped} já existiam`, type: "info" });
+  return true;
+}
