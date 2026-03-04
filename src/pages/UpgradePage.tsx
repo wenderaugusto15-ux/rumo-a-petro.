@@ -51,7 +51,7 @@ const plans = [
     cta: "Quero garantir minha aprovação",
     current: false,
     popular: true,
-    checkoutUrl: "https://pay.cakto.com.br/5puwqeq",
+    checkoutUrl: "https://pay.cakto.com.br/324ye97_793187",
     features: [
       { text: "Questões ilimitadas", included: true },
       { text: "Simulados ilimitados", included: true },
