@@ -93,8 +93,8 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            <ChatPetra />
           </BrowserRouter>
-          <ChatPetra />
         </ErrorBoundary>
       </TooltipProvider>
     </AuthProvider>
