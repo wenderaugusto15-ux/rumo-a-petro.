@@ -136,9 +136,34 @@
   .shadow-cta {
     box-shadow: var(--shadow-cta);
   }
-  
+
   #lovable-badge {
     display: none !important;
   }
+}
+
+/* Stability CSS - prevent layout collapse */
+.auth-error-container {
+  min-height: 24px;
+}
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  transition: opacity 0.2s;
+}
+
+.loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-overlay.visible {
+  opacity: 1;
 }
 

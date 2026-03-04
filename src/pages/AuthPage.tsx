@@ -49,11 +49,24 @@ export default function AuthPage() {
     }
   }, [user, authLoading, navigate]);
 
+  const translateAuthError = (msg: string): string => {
+    if (msg.includes("already registered") || msg.includes("already been registered")) return "Este email já está cadastrado. Tente fazer login.";
+    if (msg.includes("valid email") || msg.includes("invalid email")) return "Por favor, insira um email válido.";
+    if (msg.includes("password") && msg.includes("least")) return "A senha deve ter pelo menos 6 caracteres.";
+    if (msg.includes("Invalid login")) return "Email ou senha incorretos.";
+    if (msg.includes("Email not confirmed")) return "Confirme seu email antes de entrar. Verifique sua caixa de entrada.";
+    if (msg.includes("rate limit") || msg.includes("too many")) return "Muitas tentativas. Aguarde alguns minutos.";
+    if (msg.includes("network") || msg.includes("fetch")) return "Erro de conexão. Verifique sua internet e tente novamente.";
+    return "Erro ao processar. Tente novamente ou use aba anônima.";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      await new Promise(resolve => setTimeout(resolve, 50));
+
       if (isSignup) {
         const { error } = await supabase.auth.signUp({
           email,
@@ -70,9 +83,11 @@ export default function AuthPage() {
         if (error) throw error;
       }
     } catch (err: any) {
+      console.error("Auth error:", err);
+      const msg = translateAuthError(err?.message || "");
       toast({
         title: "Erro",
-        description: err.message || "Algo deu errado.",
+        description: msg,
         variant: "destructive",
       });
     } finally {
@@ -81,7 +96,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex" translate="no">
       {/* Left - Benefits (desktop only) */}
       <div className="hidden lg:flex flex-col justify-center flex-1 bg-gradient-hero p-12 xl:p-16">
         <motion.div
