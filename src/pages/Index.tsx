@@ -142,7 +142,7 @@ export default function Index() {
           <motion.div
             initial="hidden"
             animate="visible"
-            className="max-w-3xl"
+            className="max-w-3xl mx-auto text-center"
           >
             <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 bg-accent/20 text-white rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium mb-6 backdrop-blur-sm border border-accent/30">
               <Star className="h-4 w-4 text-accent" />
@@ -152,10 +152,10 @@ export default function Index() {
               Seu nome na lista de aprovados da Petrobras{" "}
               <span className="text-accent">começa aqui.</span>
             </motion.h1>
-            <motion.p variants={fadeUp} custom={2} className="text-base sm:text-xl text-white/80 mb-8 max-w-2xl leading-relaxed">
+            <motion.p variants={fadeUp} custom={2} className="text-base sm:text-xl text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed">
               Treinamento inteligente focado 100% no padrão Cesgranrio. Questões comentadas, simulados cronometrados, plano personalizado e análise de desempenho — tudo para maximizar suas chances.
             </motion.p>
-            <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
               <Link to="/auth?signup=true" className="w-full sm:w-auto">
                 <Button size="lg" className="bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 transition-all text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 animate-pulse-glow w-full">
                   Começar minha preparação agora
@@ -168,7 +168,7 @@ export default function Index() {
                 </Button>
               </a>
             </motion.div>
-            <motion.div variants={fadeUp} custom={4} className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 text-white/60 text-sm">
+            <motion.div variants={fadeUp} custom={4} className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-white/60 text-sm">
               <span className="flex items-center gap-1"><CheckCircle className="h-4 w-4 text-success" /> Gratuito para começar</span>
               <span className="flex items-center gap-1"><CheckCircle className="h-4 w-4 text-success" /> Sem cartão de crédito</span>
             </motion.div>
