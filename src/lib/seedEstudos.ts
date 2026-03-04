@@ -14,6 +14,18 @@ const MATERIAS_DATA = [
   { nome: "Informática", descricao: "Informática básica para concursos", icone: "monitor", cor: "#8B5CF6", ordem: 4 },
   { nome: "Conhecimentos Específicos - Administração", descricao: "Administração geral e pública", icone: "briefcase", cor: "#F59E0B", ordem: 5 },
   { nome: "Ciência de Dados", descricao: "Fundamentos de ciência de dados e analytics", icone: "database", cor: "#06B6D4", ordem: 6 },
+  { nome: "Administração", descricao: "Teoria Geral da Administração, Gestão de Pessoas e Processos", icone: "BookOpen", cor: "#8B5CF6", ordem: 7 },
+  { nome: "Atualidades", descricao: "Acontecimentos atuais do Brasil e do Mundo", icone: "Newspaper", cor: "#EC4899", ordem: 8 },
+  { nome: "Contabilidade", descricao: "Contabilidade Geral, Custos e Análise de Balanços", icone: "Calculator", cor: "#14B8A6", ordem: 9 },
+  { nome: "Engenharia de Petróleo", descricao: "Exploração, Produção e Processamento de Petróleo", icone: "Fuel", cor: "#F97316", ordem: 10 },
+  { nome: "Engenharia Elétrica", descricao: "Circuitos, Sistemas de Potência e Eletromagnetismo", icone: "Zap", cor: "#EAB308", ordem: 11 },
+  { nome: "Engenharia Mecânica", descricao: "Mecânica dos Fluidos, Termodinâmica e Resistência dos Materiais", icone: "Cog", cor: "#6366F1", ordem: 12 },
+  { nome: "Geologia", descricao: "Geologia Geral, Sedimentar e Estrutural", icone: "Mountain", cor: "#84CC16", ordem: 13 },
+  { nome: "Língua Inglesa", descricao: "Inglês Técnico e Interpretação de Textos", icone: "Globe", cor: "#0EA5E9", ordem: 14 },
+  { nome: "Meio Ambiente", descricao: "Gestão Ambiental, Sustentabilidade e Legislação", icone: "Leaf", cor: "#22C55E", ordem: 15 },
+  { nome: "Segurança do Trabalho", descricao: "NRs, Prevenção de Acidentes e Saúde Ocupacional", icone: "ShieldCheck", cor: "#EF4444", ordem: 16 },
+  { nome: "Técnico de Manutenção Mecânica", descricao: "Manutenção Industrial, Lubrificação e Equipamentos", icone: "Wrench", cor: "#78716C", ordem: 17 },
+  { nome: "Técnico de Operação", descricao: "Operação de Plantas, Processos e Equipamentos Industriais", icone: "Settings", cor: "#0891B2", ordem: 18 },
 ];
 
 const MODULOS_DATA: Record<string, { titulo: string; descricao: string; ordem: number }[]> = {
