@@ -3,8 +3,9 @@ import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/components/ui/sonner";
-import { Loader2, Database, BookOpen, FileText, Video } from "lucide-react";
+import { Loader2, Database, BookOpen, FileText, Video, Film } from "lucide-react";
 import { seedMaterias, seedModulos, seedConteudos, seedVideoConteudos, type SeedLog } from "@/lib/seedEstudos";
+import { seedYouTubeVideos } from "@/lib/seedConteudos";
 
 export default function AdminSeedEstudosPage() {
   const [logs, setLogs] = useState<SeedLog[]>([]);
@@ -65,6 +66,16 @@ export default function AdminSeedEstudosPage() {
     setRunning(false);
   };
 
+  const runYouTubeVideos = async () => {
+    setRunning(true);
+    setProgress(10);
+    const ok = await seedYouTubeVideos(addLog);
+    setProgress(100);
+    if (ok) toast.success("Vídeos do YouTube populados com sucesso!");
+    else toast.error("Alguns erros ocorreram ao popular vídeos");
+    setRunning(false);
+  };
+
   const logsText = logs.map((l) => l.message).join("\n");
 
   return (
@@ -95,6 +106,10 @@ export default function AdminSeedEstudosPage() {
           <Button onClick={runVideos} disabled={running} variant="secondary">
             {running ? <Loader2 className="animate-spin" /> : <Video />}
             Popular Conteúdos de Vídeo
+          </Button>
+          <Button onClick={runYouTubeVideos} disabled={running} variant="destructive">
+            {running ? <Loader2 className="animate-spin" /> : <Film />}
+            🎬 Popular Vídeos do YouTube
           </Button>
         </div>
 
