@@ -244,6 +244,67 @@ const VIDEO_DATA: ModuloGroup[] = [
       { titulo: "Tudo sobre Concurso Petrobras 2025", url: "https://www.youtube.com/watch?v=xcRaxhxtO_o", duracao: 27, descricao: "Todas as informações sobre o próximo concurso da Petrobras" },
     ],
   },
+  // === Engenharia Mecânica ===
+  {
+    materiaNome: "Engenharia Mecânica",
+    materiaDescricao: "Mecânica dos Fluidos, Termodinâmica e Resistência dos Materiais",
+    materiaIcone: "Cog",
+    materiaCor: "#6366F1",
+    moduloTitulo: "Termodinâmica",
+    moduloDescricao: "Leis da termodinâmica e ciclos",
+    videos: [
+      { titulo: "Termodinâmica Petrobras - Resolvendo Questões", url: "https://www.youtube.com/watch?v=uwoHT_CZQQA", duracao: 38, descricao: "Questões de termodinâmica para concurso Petrobras Engenharia Mecânica" },
+      { titulo: "Termodinâmica - Conceitos Introdutórios", url: "https://www.youtube.com/watch?v=dRZ1sfXuHPY", duracao: 25, descricao: "Sistema aberto e fechado, propriedades termodinâmicas" },
+      { titulo: "Balanço de Energia em Sistemas Fechados", url: "https://www.youtube.com/watch?v=0s3q95gCjg4", duracao: 96, descricao: "Primeira lei da termodinâmica aplicada" },
+    ],
+  },
+  {
+    materiaNome: "Engenharia Mecânica",
+    materiaDescricao: "Mecânica dos Fluidos, Termodinâmica e Resistência dos Materiais",
+    materiaIcone: "Cog",
+    materiaCor: "#6366F1",
+    moduloTitulo: "Mecânica dos Fluidos",
+    moduloDescricao: "Estática e dinâmica dos fluidos",
+    videos: [
+      { titulo: "Revisão de Física para Operação Petrobras", url: "https://www.youtube.com/watch?v=bblEDVoneA0", duracao: 99, descricao: "Revisão completa incluindo mecânica dos fluidos" },
+    ],
+  },
+  // === Técnico de Operação ===
+  {
+    materiaNome: "Técnico de Operação",
+    materiaDescricao: "Operação de Plantas, Processos e Equipamentos Industriais",
+    materiaIcone: "Settings",
+    materiaCor: "#0891B2",
+    moduloTitulo: "Química Aplicada",
+    moduloDescricao: "Fundamentos químicos para operação",
+    videos: [
+      { titulo: "Química Cesgranrio - Técnico de Operação", url: "https://www.youtube.com/watch?v=ABFGwF2pWUA", duracao: 3, descricao: "Questão de equilíbrio químico para técnico de operação" },
+      { titulo: "Introdução à Química Orgânica", url: "https://www.youtube.com/watch?v=fuco39FwNPY", duracao: 75, descricao: "Fundamentos de química orgânica" },
+    ],
+  },
+  {
+    materiaNome: "Técnico de Operação",
+    materiaDescricao: "Operação de Plantas, Processos e Equipamentos Industriais",
+    materiaIcone: "Settings",
+    materiaCor: "#0891B2",
+    moduloTitulo: "Processos Industriais",
+    moduloDescricao: "Operações unitárias e fluxogramas",
+    videos: [
+      { titulo: "Tudo sobre Técnico em Operação Petrobras", url: "https://www.youtube.com/watch?v=p5jqW3u_pyI", duracao: 14, descricao: "Informações completas sobre o cargo e processos" },
+    ],
+  },
+  // === Segurança do Trabalho ===
+  {
+    materiaNome: "Segurança do Trabalho",
+    materiaDescricao: "NRs, Prevenção de Acidentes e Saúde Ocupacional",
+    materiaIcone: "ShieldCheck",
+    materiaCor: "#EF4444",
+    moduloTitulo: "NRs Essenciais",
+    moduloDescricao: "NR-10, NR-12, NR-13, NR-20, NR-33, NR-35",
+    videos: [
+      { titulo: "NR 05 CIPA - Questão Cesgranrio", url: "https://www.youtube.com/watch?v=dPrvfmQHeD8", duracao: 6, descricao: "Resolução de questão sobre CIPA da Cesgranrio" },
+    ],
+  },
 ];
 
 async function ensureMateria(
