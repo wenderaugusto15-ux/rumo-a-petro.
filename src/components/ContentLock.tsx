@@ -1,8 +1,7 @@
 import { ReactNode } from "react";
 import { Lock, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useSubscription } from "@/hooks/useSubscription";
-import { useNavigate } from "react-router-dom";
+import { useAcesso } from "@/hooks/useAcesso";
 
 interface ContentLockProps {
   ordem: number;
@@ -11,10 +10,9 @@ interface ContentLockProps {
 }
 
 export default function ContentLock({ ordem, tipo = "aula", children }: ContentLockProps) {
-  const { isPro, canAccessContent } = useSubscription();
-  const navigate = useNavigate();
+  const { isPremium, podeAcessarAula, irParaPlanos } = useAcesso();
 
-  if (isPro || canAccessContent(ordem)) {
+  if (isPremium || podeAcessarAula(ordem)) {
     return <>{children}</>;
   }
 
@@ -34,13 +32,13 @@ export default function ContentLock({ ordem, tipo = "aula", children }: ContentL
           </p>
           <Button
             className="bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 w-full"
-            onClick={() => navigate("/app/upgrade")}
+            onClick={irParaPlanos}
           >
-            Desbloquear Agora
+            Ver Planos
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
           <button
-            onClick={() => navigate("/app/upgrade")}
+            onClick={irParaPlanos}
             className="text-xs text-white/60 hover:text-white/90 underline underline-offset-2"
           >
             Ver todos os planos
