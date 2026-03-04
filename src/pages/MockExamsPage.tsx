@@ -1,11 +1,25 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Clock, BookOpen, Zap, ChevronRight, Trophy, Lock } from "lucide-react";
+import { Clock, BookOpen, Zap, ChevronRight, Trophy, Lock, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 
-const mockExamTypes = [
+type ExamTypeConfig = {
+  title: string;
+  desc: string;
+  duration: string;
+  icon: any;
+  locked: boolean;
+  subjects: string[];
+  type: "quick" | "full";
+  totalQuestions: number;
+};
+
+const mockExamTypes: ExamTypeConfig[] = [
   {
     title: "Simulado Rápido",
     desc: "20 questões selecionadas para treino ágil",
@@ -13,14 +27,18 @@ const mockExamTypes = [
     icon: Zap,
     locked: false,
     subjects: ["Português", "Matemática", "Inglês"],
+    type: "quick",
+    totalQuestions: 20,
   },
   {
     title: "Simulado Completo",
-    desc: "Simulação fiel ao estilo Cesgranrio",
+    desc: "60 questões no estilo Cesgranrio",
     duration: "~4 horas",
     icon: BookOpen,
     locked: false,
     subjects: ["Todas as matérias da trilha"],
+    type: "full",
+    totalQuestions: 60,
   },
   {
     title: "Simulado por Matéria",
@@ -29,22 +47,103 @@ const mockExamTypes = [
     icon: Trophy,
     locked: true,
     subjects: ["Escolha a matéria"],
+    type: "quick",
+    totalQuestions: 20,
   },
 ];
 
-const recentResults = [
-  { date: "20/02/2026", type: "Rápido", score: 75, questions: 20 },
-  { date: "18/02/2026", type: "Completo", score: 68, questions: 60 },
-  { date: "15/02/2026", type: "Rápido", score: 80, questions: 20 },
-];
+interface RecentResult {
+  id: string;
+  created_at: string;
+  type: string;
+  score_percent: number | null;
+  total_questions: number;
+  finished_at: string | null;
+}
 
 export default function MockExamsPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [starting, setStarting] = useState<string | null>(null);
+  const [recentResults, setRecentResults] = useState<RecentResult[]>([]);
+  const [loadingResults, setLoadingResults] = useState(true);
 
-  const handleStartExam = (exam: typeof mockExamTypes[0]) => {
-    if (exam.locked) return;
-    toast({ title: `Iniciando ${exam.title}...`, description: "Preparando suas questões." });
-    // TODO: integrate with mock_exams table to actually create and start an exam
+  // Load real recent results
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from("mock_exams")
+        .select("id, created_at, type, score_percent, total_questions, finished_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      setRecentResults(data || []);
+      setLoadingResults(false);
+    };
+    load();
+  }, [user]);
+
+  const handleStartExam = async (exam: ExamTypeConfig) => {
+    if (exam.locked || !user || starting) return;
+    setStarting(exam.title);
+
+    try {
+      // 1. Fetch random questions
+      const { data: questions, error: qErr } = await supabase
+        .from("questions")
+        .select("id")
+        .eq("active", true)
+        .limit(500);
+
+      if (qErr) throw qErr;
+      if (!questions || questions.length < exam.totalQuestions) {
+        toast({ title: "Questões insuficientes", description: `Apenas ${questions?.length || 0} questões disponíveis.`, variant: "destructive" });
+        setStarting(null);
+        return;
+      }
+
+      // Shuffle and pick
+      const shuffled = questions.sort(() => Math.random() - 0.5).slice(0, exam.totalQuestions);
+
+      // 2. Create mock_exam record
+      const { data: mockExam, error: examErr } = await supabase
+        .from("mock_exams")
+        .insert({
+          user_id: user.id,
+          type: exam.type,
+          total_questions: exam.totalQuestions,
+        })
+        .select("id")
+        .single();
+
+      if (examErr || !mockExam) throw examErr;
+
+      // 3. Insert mock_exam_questions
+      const examQuestions = shuffled.map((q, i) => ({
+        mock_exam_id: mockExam.id,
+        question_id: q.id,
+        order_index: i,
+      }));
+
+      const { error: insertErr } = await supabase
+        .from("mock_exam_questions")
+        .insert(examQuestions);
+
+      if (insertErr) throw insertErr;
+
+      // 4. Navigate to exam taking page
+      toast({ title: `${exam.title} iniciado!`, description: `${exam.totalQuestions} questões preparadas.` });
+      navigate(`/app/simulado/${mockExam.id}`);
+    } catch (err: any) {
+      toast({ title: "Erro ao iniciar simulado", description: err?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setStarting(null);
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("pt-BR");
   };
 
   return (
@@ -88,32 +187,55 @@ export default function MockExamsPage() {
               </div>
               <Button
                 className={exam.locked ? "w-full bg-muted text-muted-foreground" : "w-full bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90"}
-                disabled={exam.locked}
+                disabled={exam.locked || starting === exam.title}
                 onClick={() => handleStartExam(exam)}
               >
-                {exam.locked ? "Desbloquear" : "Iniciar"} <ChevronRight className="ml-1 h-4 w-4" />
+                {starting === exam.title ? (
+                  <><Loader2 className="h-4 w-4 animate-spin mr-1" /> Preparando...</>
+                ) : (
+                  <>{exam.locked ? "Desbloquear" : "Iniciar"} <ChevronRight className="ml-1 h-4 w-4" /></>
+                )}
               </Button>
             </motion.div>
           ))}
         </div>
 
-        {/* Recent results */}
+        {/* Recent results from DB */}
         <div className="bg-card rounded-xl shadow-card border border-border overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-border">
             <h2 className="font-bold text-foreground">Resultados Recentes</h2>
           </div>
           <div className="divide-y divide-border">
-            {recentResults.map((r, i) => (
-              <div key={i} className="p-4 sm:px-5 flex items-center justify-between">
-                <div>
-                  <div className="font-semibold text-sm text-foreground">Simulado {r.type}</div>
-                  <div className="text-xs text-muted-foreground">{r.date} · {r.questions} questões</div>
-                </div>
-                <div className={`text-lg font-extrabold ${r.score >= 70 ? "text-success" : "text-accent"}`}>
-                  {r.score}%
-                </div>
+            {loadingResults ? (
+              <div className="p-8 flex justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            ))}
+            ) : recentResults.length === 0 ? (
+              <div className="p-6 text-center text-sm text-muted-foreground">
+                Nenhum simulado realizado ainda. Comece agora!
+              </div>
+            ) : (
+              recentResults.map((r) => (
+                <div
+                  key={r.id}
+                  className="p-4 sm:px-5 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => navigate(`/app/simulado/${r.id}`)}
+                >
+                  <div>
+                    <div className="font-semibold text-sm text-foreground">
+                      Simulado {r.type === "quick" ? "Rápido" : "Completo"}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatDate(r.created_at)} · {r.total_questions} questões
+                      {!r.finished_at && " · Em andamento"}
+                    </div>
+                  </div>
+                  <div className={`text-lg font-extrabold ${r.finished_at ? ((r.score_percent ?? 0) >= 70 ? "text-success" : "text-accent") : "text-muted-foreground"}`}>
+                    {r.finished_at ? `${r.score_percent}%` : "—"}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
