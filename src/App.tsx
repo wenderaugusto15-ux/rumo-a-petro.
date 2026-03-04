@@ -23,6 +23,8 @@ const PerformancePage = lazy(() => import("./pages/PerformancePage"));
 const StudyPlanPage = lazy(() => import("./pages/StudyPlanPage"));
 const UpgradePage = lazy(() => import("./pages/UpgradePage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const EstudosPage = lazy(() => import("./pages/EstudosPage"));
+const EstudosMateriaPage = lazy(() => import("./pages/EstudosMateriaPage"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminQuestionsPage = lazy(() => import("./pages/admin/AdminQuestionsPage"));
 const AdminSubjectsPage = lazy(() => import("./pages/admin/AdminSubjectsPage"));
@@ -67,6 +69,8 @@ const App = () => (
                 <Route path="/app/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
                 <Route path="/app/plano" element={<ProtectedRoute><StudyPlanPage /></ProtectedRoute>} />
                 <Route path="/app/upgrade" element={<ProtectedRoute><UpgradePage /></ProtectedRoute>} />
+                <Route path="/app/estudos" element={<ProtectedRoute><EstudosPage /></ProtectedRoute>} />
+                <Route path="/app/estudos/:materiaId" element={<ProtectedRoute><EstudosMateriaPage /></ProtectedRoute>} />
                 <Route path="/app/perfil" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
                 {/* Admin Routes */}
