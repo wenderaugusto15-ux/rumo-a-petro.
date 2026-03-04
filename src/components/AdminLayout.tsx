@@ -9,6 +9,7 @@ const navItems = [
   { icon: LayoutDashboard, label: "Visão Geral", path: "/admin" },
   { icon: BookOpen, label: "Questões", path: "/admin/questoes" },
   { icon: Layers, label: "Matérias & Assuntos", path: "/admin/materias" },
+  { icon: BookOpen, label: "Estudos", path: "/admin/estudos" },
   { icon: Route, label: "Trilhas", path: "/admin/trilhas" },
   { icon: MessageSquare, label: "Depoimentos", path: "/admin/depoimentos" },
   { icon: Calendar, label: "Config Global", path: "/admin/config" },
