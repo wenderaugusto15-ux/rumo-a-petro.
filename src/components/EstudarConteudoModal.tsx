@@ -251,6 +251,7 @@ export default function EstudarConteudoModal({ conteudoId, open, onOpenChange }:
             </div>
             {isDone && <CheckCircle2 className="h-6 w-6 text-green-500" />}
           </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

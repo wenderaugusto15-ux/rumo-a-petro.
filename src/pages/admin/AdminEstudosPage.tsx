@@ -253,8 +253,24 @@ function ConteudosTab() {
     return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : "";
   };
 
+  const hasContentCheck = (c: any) => {
+    if (c.tipo === "video" && c.video_url) return true;
+    if (c.tipo === "texto" && c.conteudo_texto) return true;
+    if (c.tipo === "pdf" && c.pdf_url) return true;
+    return false;
+  };
+
+  const canSave = () => {
+    if (!form.titulo || !form.modulo_id) return false;
+    if (form.tipo === "video" && !form.video_url) return false;
+    if (form.tipo === "texto" && !form.conteudo_texto) return false;
+    if (form.tipo === "pdf" && !form.pdf_url) return false;
+    return true;
+  };
+
   const save = useMutation({
     mutationFn: async () => {
+      if (!canSave()) throw new Error("Preencha o conteúdo do material antes de salvar.");
       const payload: any = { modulo_id: form.modulo_id, tipo: form.tipo, titulo: form.titulo, descricao: form.descricao || null, ordem: form.ordem, ativo: form.ativo };
       if (form.tipo === "video") { payload.video_url = form.video_url; payload.video_thumbnail = extractYtThumb(form.video_url); payload.duracao_minutos = form.duracao_minutos || null; }
       if (form.tipo === "texto") { payload.conteudo_texto = form.conteudo_texto; }
@@ -298,16 +314,24 @@ function ConteudosTab() {
         <Table>
           <TableHeader><TableRow><TableHead>Tipo</TableHead><TableHead>Título</TableHead><TableHead className="hidden sm:table-cell">Módulo</TableHead><TableHead>Ordem</TableHead><TableHead>Ativo</TableHead><TableHead className="w-24">Ações</TableHead></TableRow></TableHeader>
           <TableBody>
-            {filtered.map((c: any) => (
-              <TableRow key={c.id} className="hover:bg-muted/50">
+            {filtered.map((c: any) => {
+              const incomplete = !hasContentCheck(c);
+              return (
+              <TableRow key={c.id} className={`hover:bg-muted/50 ${incomplete ? "bg-destructive/5" : ""}`}>
                 <TableCell><Badge variant="outline" className="text-xs">{tipoLabel[c.tipo] || c.tipo}</Badge></TableCell>
-                <TableCell className="font-medium max-w-[200px] truncate">{c.titulo}</TableCell>
+                <TableCell className="font-medium max-w-[200px] truncate">
+                  <span className="flex items-center gap-2">
+                    {c.titulo}
+                    {incomplete && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Sem conteúdo</Badge>}
+                  </span>
+                </TableCell>
                 <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{c.modulos?.titulo}</TableCell>
                 <TableCell>{c.ordem}</TableCell>
                 <TableCell><Badge variant={c.ativo ? "default" : "secondary"}>{c.ativo ? "Sim" : "Não"}</Badge></TableCell>
                 <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" onClick={() => openEdit(c)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></div></TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       )}
@@ -372,7 +396,12 @@ function ConteudosTab() {
               <div className="flex items-center gap-2 pt-6"><Switch checked={form.ativo} onCheckedChange={v => setForm(f => ({ ...f, ativo: v }))} /><Label>Ativo</Label></div>
             </div>
           </div>
-          <DialogFooter><Button onClick={() => save.mutate()} disabled={!form.titulo || !form.modulo_id || save.isPending}>{save.isPending ? "Salvando..." : "Salvar"}</Button></DialogFooter>
+          <DialogFooter>
+            {!canSave() && form.titulo && form.modulo_id && (
+              <p className="text-xs text-destructive mr-auto flex items-center">⚠️ O conteúdo do material é obrigatório</p>
+            )}
+            <Button onClick={() => save.mutate()} disabled={!canSave() || save.isPending}>{save.isPending ? "Salvando..." : "Salvar"}</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
