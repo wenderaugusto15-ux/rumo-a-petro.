@@ -111,6 +111,15 @@ export default function EstudarConteudoModal({ conteudoId, open, onOpenChange }:
 
   const isDone = !!progressRecord?.concluido;
 
+  const hasContent = (c: any) => {
+    if (c.tipo === "video" && c.video_url) return true;
+    if (c.tipo === "texto" && c.conteudo_texto) return true;
+    if (c.tipo === "pdf" && c.pdf_url) return true;
+    return false;
+  };
+
+  const conteudoHasContent = conteudo ? hasContent(conteudo) : false;
+
   const tipoIcon = (tipo: string) => {
     if (tipo === "video") return <Play className="h-5 w-5 text-red-500" />;
     if (tipo === "pdf") return <FileDown className="h-5 w-5 text-accent" />;
@@ -133,6 +142,14 @@ export default function EstudarConteudoModal({ conteudoId, open, onOpenChange }:
         </DialogHeader>
 
         <div className="px-6 pb-6 space-y-6">
+          {/* Fallback: conteúdo sem material */}
+          {conteudo && !hasContent(conteudo) && (
+            <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
+              <FileText className="h-12 w-12 text-muted-foreground/50" />
+              <p className="text-sm text-muted-foreground font-medium">Este conteúdo está sendo preparado. Volte em breve!</p>
+            </div>
+          )}
+
           {/* Video */}
           {conteudo?.tipo === "video" && conteudo.video_url && (() => {
             const ytId = extractYoutubeId(conteudo.video_url);
@@ -190,9 +207,10 @@ export default function EstudarConteudoModal({ conteudoId, open, onOpenChange }:
             </div>
           )}
 
-          <Separator />
+          {conteudoHasContent && <Separator />}
 
-          {/* Anotações */}
+          {/* Anotações - only show if content exists */}
+          {conteudoHasContent && (
           <div className="space-y-3">
             <h3 className="text-sm font-semibold flex items-center gap-2 text-foreground">
               <StickyNote className="h-4 w-4 text-accent" /> Suas anotações
@@ -207,10 +225,12 @@ export default function EstudarConteudoModal({ conteudoId, open, onOpenChange }:
               <Save className="h-4 w-4" /> {savingNotes ? "Salvando..." : "Salvar anotações"}
             </Button>
           </div>
+          )}
 
-          <Separator />
+          {conteudoHasContent && <Separator />}
 
-          {/* Conclusão */}
+          {/* Conclusão - only show if content exists */}
+          {conteudoHasContent && (
           <div
             className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-colors cursor-pointer ${
               isDone ? "border-green-500/50 bg-green-500/5" : "border-border"
