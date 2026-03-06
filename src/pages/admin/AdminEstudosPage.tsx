@@ -242,10 +242,16 @@ function ConteudosTab() {
   const filteredModulos = filterMateria === "all" ? allModulos : (allModulos || []).filter(m => m.materia_id === filterMateria);
   const formModulos = form.formMateriaId ? (allModulos || []).filter(m => m.materia_id === form.formMateriaId) : allModulos;
 
+  const incompleteCount = (conteudos || []).filter(c => !hasContentCheck(c)).length;
+
   const filtered = (conteudos || []).filter(c => {
     if (filterMateria !== "all" && c.modulos?.materia_id !== filterMateria) return false;
     if (filterModulo !== "all" && c.modulo_id !== filterModulo) return false;
     return true;
+  }).sort((a, b) => {
+    const aInc = hasContentCheck(a) ? 1 : 0;
+    const bInc = hasContentCheck(b) ? 1 : 0;
+    return aInc - bInc;
   });
 
   const extractYtThumb = (url: string) => {
