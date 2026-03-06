@@ -33,12 +33,12 @@ const testimonials = [
   { name: "Ana C.", age: 31, city: "Salvador", rating: 5, role: "Eng. de Processamento", text: "O cronograma automático mudou minha preparação. Nunca mais perdi tempo decidindo o que estudar." },
   { name: "Pedro R.", age: 24, city: "Curitiba", rating: 5, role: "Analista de Sistemas", text: "As questões no padrão Cesgranrio fizeram toda a diferença. No dia da prova, eu já conhecia o estilo de cobrança." },
   { name: "Mariana S.", age: 29, city: "Belo Horizonte", rating: 4, role: "Administradora", text: "A gamificação me manteve motivada nos dias difíceis. A sequência de 30 dias seguidos foi minha maior conquista antes da aprovação." },
-  { name: "Rafael T.", age: 33, city: "Recife", rating: 5, role: "Eng. de Petróleo", text: "Engenheiro aprovado. O plano de estudo personalizado para minha trilha foi essencial para otimizar meu tempo." },
+  { name: "Rafael T.", age: 33, city: "Recife", rating: 5, role: "Eng. de Petróleo", text: "Engenheiro aprovado. O plano de estudo personalizado para minha área específica foi essencial para otimizar meu tempo." },
   { name: "Camila F.", age: 26, city: "São Paulo", rating: 5, role: "Técnica de Segurança", text: "Comecei com medo do concurso. As análises de desempenho me mostraram que eu estava no caminho certo." },
 ];
 
 const faqs = [
-  { q: "Isso serve para qualquer cargo da Petrobras?", a: "Sim! Temos trilhas específicas para cada área (Engenharia, TI, Administrativo, Técnico) além de uma base geral para quem ainda não decidiu. Todo o conteúdo segue o padrão Cesgranrio." },
+  { q: "Isso serve para qualquer cargo da Petrobras?", a: "Sim! Temos áreas específicas para cada cargo (Engenharia, TI, Administrativo, Técnico) além das matérias gerais incluídas automaticamente. Todo o conteúdo segue o padrão Cesgranrio." },
   { q: "Tem banco de questões?", a: "Sim. Nosso banco cresce constantemente com questões no estilo Cesgranrio, todas com gabarito comentado e classificação por matéria, assunto e dificuldade." },
   { q: "O que é 'padrão Cesgranrio'?", a: "A Cesgranrio tem um estilo próprio de elaborar questões — enunciados contextualizados, alternativas com pegadinhas sutis e foco em aplicação prática. Treinamos você exatamente para esse padrão." },
   { q: "Posso usar no celular?", a: "Absolutamente. A plataforma é 100% responsiva e otimizada para mobile, para você estudar de qualquer lugar." },

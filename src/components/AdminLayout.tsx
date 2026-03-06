@@ -11,7 +11,7 @@ const navItems = [
   { icon: BookOpen, label: "Questões", path: "/admin/questoes" },
   { icon: Layers, label: "Matérias & Assuntos", path: "/admin/materias" },
   { icon: BookOpen, label: "Estudos", path: "/admin/estudos" },
-  { icon: Route, label: "Trilhas", path: "/admin/trilhas" },
+  { icon: Route, label: "Áreas Específicas", path: "/admin/trilhas" },
   { icon: MessageSquare, label: "Depoimentos", path: "/admin/depoimentos" },
   { icon: Calendar, label: "Config Global", path: "/admin/config" },
   { icon: CreditCard, label: "Planos & Limites", path: "/admin/planos" },

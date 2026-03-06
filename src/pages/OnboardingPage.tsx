@@ -153,14 +153,15 @@ export default function OnboardingPage() {
               >
                 <div className="flex items-center gap-3 mb-1">
                   <Target className="h-5 w-5 text-accent" />
-                  <h2 className="text-xl font-extrabold text-foreground">Escolha sua trilha</h2>
+                  <h2 className="text-xl font-extrabold text-foreground">Selecione sua Área Específica</h2>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">Qual cargo/área você vai concorrer?</p>
+                <p className="text-sm text-muted-foreground mb-1">Qual cargo/área você vai concorrer?</p>
+                <p className="text-xs text-accent font-medium mb-4">📚 Matérias Gerais já estão incluídas na sua grade automaticamente.</p>
 
                 <div className="relative mb-3">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar trilha..."
+                    placeholder="Buscar área específica..."
                     value={trackSearch}
                     onChange={(e) => setTrackSearch(e.target.value)}
                     className="pl-10"
@@ -196,7 +197,7 @@ export default function OnboardingPage() {
                     </button>
                   ))}
                   {filteredTracks.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-6">Nenhuma trilha encontrada.</p>
+                    <p className="text-sm text-muted-foreground text-center py-6">Nenhuma área específica encontrada.</p>
                   )}
                 </div>
               </motion.div>
