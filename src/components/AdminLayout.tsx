@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Layers, Route, MessageSquare,
-  Calendar, CreditCard, ArrowLeft, Zap, Shield
+  Calendar, CreditCard, ArrowLeft, Zap, Shield, Megaphone
 } from "lucide-react";
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { icon: MessageSquare, label: "Depoimentos", path: "/admin/depoimentos" },
   { icon: Calendar, label: "Config Global", path: "/admin/config" },
   { icon: CreditCard, label: "Planos & Limites", path: "/admin/planos" },
+  { icon: Megaphone, label: "Marketing / Pixel", path: "/admin/marketing" },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
