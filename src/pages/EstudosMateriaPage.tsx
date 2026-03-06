@@ -22,6 +22,7 @@ import UpgradeModal from "@/components/UpgradeModal";
 import { useAcesso } from "@/hooks/useAcesso";
 import UpgradeBanner from "@/components/UpgradeBanner";
 import { useMetaPixel } from "@/hooks/useMetaPixel";
+import { hasValidContent } from "@/lib/contentValidation";
 
 export default function EstudosMateriaPage() {
   const { materiaId } = useParams<{ materiaId: string }>();
@@ -58,13 +59,7 @@ export default function EstudosMateriaPage() {
       const moduloIds = (modulos || []).map(m => m.id);
       if (moduloIds.length === 0) return [];
       const { data } = await supabase.from("conteudos").select("*").in("modulo_id", moduloIds).eq("ativo", true).order("ordem");
-      // Filter out conteudos without actual content
-      return (data || []).filter(c => {
-        if (c.tipo === "video" && c.video_url) return true;
-        if (c.tipo === "texto" && c.conteudo_texto) return true;
-        if (c.tipo === "pdf" && c.pdf_url) return true;
-        return false;
-      });
+      return (data || []).filter(c => hasValidContent(c));
     },
     enabled: !!modulos && modulos.length > 0,
   });
