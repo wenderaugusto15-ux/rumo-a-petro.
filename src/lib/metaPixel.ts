@@ -4,31 +4,27 @@ export function initMetaPixel() {
   if (!pixelId || typeof window === "undefined") return;
 
   // Avoid double-init
-  if (typeof window.fbq === "function") return;
+  if (typeof (window as any).fbq === "function") return;
 
-  // Meta Pixel base code
-  (function (f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
-    if (f.fbq) return;
-    n = f.fbq = function () {
-      n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
-    };
-    if (!f._fbq) f._fbq = n;
-    n.push = n;
-    n.loaded = !0;
-    n.version = "2.0";
-    n.queue = [];
-    t = b.createElement(e);
-    t.async = !0;
-    t.src = v;
-    s = b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t, s);
-  })(
-    window,
-    document,
-    "script",
-    "https://connect.facebook.net/en_US/fbevents.js"
-  );
+  const w = window as any;
+  const d = document as any;
 
-  window.fbq("init", pixelId);
-  window.fbq("track", "PageView");
+  const n = (w.fbq = function () {
+    // eslint-disable-next-line prefer-rest-params
+    n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+  });
+  if (!w._fbq) w._fbq = n;
+  n.push = n;
+  n.loaded = true;
+  n.version = "2.0";
+  n.queue = [] as any[];
+
+  const t = d.createElement("script");
+  t.async = true;
+  t.src = "https://connect.facebook.net/en_US/fbevents.js";
+  const s = d.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(t, s);
+
+  w.fbq("init", pixelId);
+  w.fbq("track", "PageView");
 }
