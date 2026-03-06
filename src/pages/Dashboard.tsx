@@ -9,6 +9,8 @@ import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { useUserArea } from "@/hooks/useUserArea";
+import AreaWarningBanner from "@/components/AreaWarningBanner";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer
@@ -49,6 +51,7 @@ function CountdownTimer({ days }: { days: number | null }) {
 
 export default function Dashboard() {
   const { data, isLoading } = useDashboardData();
+  const { hasArea, trackName } = useUserArea();
 
   if (isLoading || !data) {
     return (
@@ -80,7 +83,12 @@ export default function Dashboard() {
               <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground">
                 Olá, {userName}! 👋
               </h1>
-              <p className="text-muted-foreground mt-1">Continue sua preparação de alta performance.</p>
+              <p className="text-muted-foreground mt-1">
+                Continue sua preparação de alta performance.
+                {hasArea && trackName && (
+                  <span className="text-primary font-medium"> · {trackName}</span>
+                )}
+              </p>
             </div>
             <div className="flex items-center gap-3">
               {streak > 0 && (
@@ -95,6 +103,12 @@ export default function Dashboard() {
               </div>
             </div>
           </motion.div>
+
+          {!hasArea && (
+            <motion.div variants={fadeUp} custom={0.5}>
+              <AreaWarningBanner />
+            </motion.div>
+          )}
 
           <motion.div variants={fadeUp} custom={1}>
             <CountdownTimer days={daysUntilExam} />

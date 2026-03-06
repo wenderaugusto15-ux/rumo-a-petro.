@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserArea } from "@/hooks/useUserArea";
+import AreaWarningBanner from "@/components/AreaWarningBanner";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -26,6 +28,11 @@ function getIcon(name: string | null): LucideIcon {
 export default function EstudosPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { subjectIds, hasArea } = useUserArea();
+
+  // Note: EstudosPage uses "materias" table (separate from "subjects").
+  // We show all materias for now since they don't have a direct link to tracks/subjects.
+  // TODO: If materias need to be filtered by area, a mapping table would be needed.
 
   const { data: materias, isLoading: loadingMaterias } = useQuery({
     queryKey: ["materias-estudo"],
@@ -117,6 +124,8 @@ export default function EstudosPage() {
               <p className="text-sm text-muted-foreground">Seu caminho para a aprovação na Petrobras</p>
             </div>
           </div>
+
+          {!hasArea && <AreaWarningBanner />}
 
           <div className="bg-card border border-border rounded-xl p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">

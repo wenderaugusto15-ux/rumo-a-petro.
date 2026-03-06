@@ -19,7 +19,7 @@ export interface PerformanceData {
   weaknesses: { subject: string; rate: string; tip: string }[];
 }
 
-async function fetchPerformanceData(userId: string): Promise<PerformanceData> {
+async function fetchPerformanceData(userId: string, filterSubjectIds: string[]): Promise<PerformanceData> {
   // Fetch question_attempts (prática avulsa)
   const { data: attempts } = await supabase
     .from("question_attempts")
@@ -53,7 +53,17 @@ async function fetchPerformanceData(userId: string): Promise<PerformanceData> {
   const attemptQuestionIds = new Set((attempts || []).map(a => a.question_id));
   const uniqueMockAnswers = mockAnswers.filter(a => !attemptQuestionIds.has(a.question_id));
 
-  const allAttempts = [...(attempts || []), ...uniqueMockAnswers];
+  let allAttempts = [...(attempts || []), ...uniqueMockAnswers];
+
+  // Filter by user's area subjects if provided
+  if (filterSubjectIds.length > 0) {
+    const filterSet = new Set(filterSubjectIds);
+    allAttempts = allAttempts.filter(a => {
+      const q = a.questions as any;
+      return q?.subject_id && filterSet.has(q.subject_id);
+    });
+  }
+
   const totalQuestions = allAttempts.length;
 
   // Overall accuracy
@@ -169,12 +179,12 @@ async function fetchPerformanceData(userId: string): Promise<PerformanceData> {
   };
 }
 
-export function usePerformanceData() {
+export function usePerformanceData(filterSubjectIds: string[] = []) {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["performance", user?.id],
-    queryFn: () => fetchPerformanceData(user!.id),
+    queryKey: ["performance", user?.id, filterSubjectIds],
+    queryFn: () => fetchPerformanceData(user!.id, filterSubjectIds),
     enabled: !!user?.id,
     staleTime: 30_000,
   });

@@ -11,6 +11,8 @@ import AppLayout from "@/components/AppLayout";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserArea } from "@/hooks/useUserArea";
+import AreaWarningBanner from "@/components/AreaWarningBanner";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -29,6 +31,7 @@ const LEVEL_STYLE: Record<string, string> = {
 export default function QuestionsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { subjectIds, hasArea } = useUserArea();
 
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -37,7 +40,6 @@ export default function QuestionsPage() {
   const [loading, setLoading] = useState(true);
 
   // Filters
-  const [filterArea, setFilterArea] = useState<string | null>(null); // "general" | "specific" | null
   const [filterSubject, setFilterSubject] = useState<string | null>(null);
   const [filterTopic, setFilterTopic] = useState<string | null>(null);
   const [filterLevel, setFilterLevel] = useState<string | null>(null);
@@ -53,16 +55,22 @@ export default function QuestionsPage() {
   const [dailyCount, setDailyCount] = useState(0);
   const [dailyLimit, setDailyLimit] = useState(20);
 
-  // Load subjects & topics
+  // Load subjects & topics - filtered by user area
   useEffect(() => {
-    Promise.all([
-      supabase.from("subjects").select("id, name, is_general").eq("active", true).order("name"),
-      supabase.from("topics").select("id, name, subject_id").eq("active", true).order("name"),
-    ]).then(([subRes, topRes]) => {
+    const load = async () => {
+      let subQuery = supabase.from("subjects").select("id, name, is_general").eq("active", true).order("name");
+      if (subjectIds.length > 0) {
+        subQuery = subQuery.in("id", subjectIds);
+      }
+      const [subRes, topRes] = await Promise.all([
+        subQuery,
+        supabase.from("topics").select("id, name, subject_id").eq("active", true).order("name"),
+      ]);
       if (subRes.data) setSubjects(subRes.data);
       if (topRes.data) setTopics(topRes.data);
-    });
-  }, []);
+    };
+    load();
+  }, [subjectIds]);
 
   // Load daily counter
   useEffect(() => {
@@ -97,7 +105,7 @@ export default function QuestionsPage() {
       });
   }, [user]);
 
-  // Load questions based on filters
+  // Load questions based on filters - filtered by user area
   const loadQuestions = useCallback(async () => {
     setLoading(true);
     let query = supabase
@@ -108,11 +116,9 @@ export default function QuestionsPage() {
 
     if (filterSubject) {
       query = query.eq("subject_id", filterSubject);
-    } else if (filterArea) {
-      const areaSubjectIds = subjects
-        .filter((s) => (filterArea === "general" ? s.is_general : !s.is_general))
-        .map((s) => s.id);
-      if (areaSubjectIds.length > 0) query = query.in("subject_id", areaSubjectIds);
+    } else if (subjectIds.length > 0) {
+      // Filter by user's area (general + specific)
+      query = query.in("subject_id", subjectIds);
     }
     if (filterTopic) query = query.eq("topic_id", filterTopic);
     if (filterLevel) query = query.eq("level", filterLevel as "easy" | "medium" | "hard");
@@ -126,7 +132,7 @@ export default function QuestionsPage() {
       resetAnswer();
     }
     setLoading(false);
-  }, [filterSubject, filterTopic, filterLevel, filterArea, subjects]);
+  }, [filterSubject, filterTopic, filterLevel, subjectIds]);
 
   useEffect(() => {
     loadQuestions();
@@ -263,10 +269,6 @@ export default function QuestionsPage() {
     toast({ title: "Marcada para revisão ✅" });
   };
 
-  const filteredSubjects = filterArea
-    ? subjects.filter((s) => (filterArea === "general" ? s.is_general : !s.is_general))
-    : subjects;
-
   const filteredTopics = filterSubject
     ? topics.filter((t) => t.subject_id === filterSubject)
     : [];
@@ -303,24 +305,11 @@ export default function QuestionsPage() {
           </div>
         </div>
 
+        {!hasArea && <AreaWarningBanner />}
+
         {/* Filters */}
         <div className="flex flex-wrap gap-2 mb-4 items-center">
           <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-          
-          {/* Area filter */}
-          <Select
-            value={filterArea ?? "all"}
-            onValueChange={(v) => { setFilterArea(v === "all" ? null : v); setFilterSubject(null); setFilterTopic(null); }}
-          >
-            <SelectTrigger className="w-[140px] h-9 text-xs">
-              <SelectValue placeholder="Área" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as áreas</SelectItem>
-              <SelectItem value="general">Gerais</SelectItem>
-              <SelectItem value="specific">Específicas</SelectItem>
-            </SelectContent>
-          </Select>
 
           {/* Subject filter */}
           <Select
@@ -332,7 +321,7 @@ export default function QuestionsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas as matérias</SelectItem>
-              {filteredSubjects.map((s) => (
+              {subjects.map((s) => (
                 <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
               ))}
             </SelectContent>
@@ -459,90 +448,86 @@ export default function QuestionsPage() {
                 </div>
               </div>
 
-              {/* Statement */}
-              <div className="p-4 sm:p-6">
-                <p className="text-foreground leading-relaxed whitespace-pre-line text-sm sm:text-base">
+              {/* Question Body */}
+              <div className="p-4 sm:p-5">
+                <p className="text-foreground text-sm sm:text-base leading-relaxed mb-6 whitespace-pre-wrap">
                   {currentQuestion.statement}
                 </p>
-              </div>
 
-              {/* Options */}
-              <div className="px-4 sm:px-6 pb-4 space-y-2">
-                {options.map((opt) => {
-                  let optStyle = "bg-muted/50 border-border hover:bg-muted";
-                  if (answered) {
-                    if (opt.letter.toLowerCase() === currentQuestion.correct_option.trim().toLowerCase()) {
-                      optStyle = "bg-success/10 border-success/50 text-foreground";
-                    } else if (opt.letter === selected && !isCorrect) {
-                      optStyle = "bg-destructive/10 border-destructive/50 text-foreground";
-                    } else {
-                      optStyle = "bg-muted/30 border-border opacity-60";
+                {/* Options */}
+                <div className="space-y-2">
+                  {options.map((opt) => {
+                    const isSelected = selected === opt.letter.toLowerCase();
+                    const optLetter = opt.letter.toLowerCase();
+                    const correctLetter = currentQuestion.correct_option.trim().toLowerCase();
+                    const isOptionCorrect = optLetter === correctLetter;
+
+                    let style = "border-border bg-background hover:border-accent/50 text-foreground";
+                    if (answered) {
+                      if (isOptionCorrect) style = "border-success bg-success/10 text-foreground";
+                      else if (isSelected && !isCorrect) style = "border-destructive bg-destructive/10 text-foreground";
+                    } else if (isSelected) {
+                      style = "border-accent bg-accent/10 text-foreground ring-2 ring-accent/30";
                     }
-                  } else if (selected === opt.letter) {
-                    optStyle = "bg-accent/10 border-accent/50 ring-2 ring-accent/30";
-                  }
 
-                  return (
-                    <button
-                      key={opt.letter}
-                      onClick={() => !answered && setSelected(opt.letter)}
-                      disabled={answered}
-                      className={`w-full flex items-start gap-3 p-3 sm:p-4 rounded-lg border transition-all text-left ${optStyle}`}
-                    >
-                      <span className="h-7 w-7 rounded-full bg-background border border-border flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-                        {opt.letter}
-                      </span>
-                      <span className="text-sm sm:text-base">{opt.text}</span>
-                      {answered && opt.letter.toLowerCase() === currentQuestion.correct_option.trim().toLowerCase() && (
-                        <CheckCircle className="h-5 w-5 text-success ml-auto shrink-0 mt-0.5" />
-                      )}
-                      {answered && opt.letter === selected && !isCorrect && opt.letter.toLowerCase() !== currentQuestion.correct_option.trim().toLowerCase() && (
-                        <XCircle className="h-5 w-5 text-destructive ml-auto shrink-0 mt-0.5" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+                    return (
+                      <button
+                        key={opt.letter}
+                        onClick={() => !answered && setSelected(opt.letter.toLowerCase())}
+                        disabled={answered}
+                        className={`w-full text-left p-3 sm:p-4 rounded-lg border transition-all text-sm ${style}`}
+                      >
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-muted text-muted-foreground text-xs font-bold mr-3">
+                          {opt.letter}
+                        </span>
+                        {opt.text}
+                        {answered && isOptionCorrect && <CheckCircle className="inline ml-2 h-4 w-4 text-success" />}
+                        {answered && isSelected && !isCorrect && optLetter !== correctLetter && <XCircle className="inline ml-2 h-4 w-4 text-destructive" />}
+                      </button>
+                    );
+                  })}
+                </div>
 
-              {/* Actions */}
-              <div className="px-4 sm:px-6 pb-4">
-                {!answered ? (
-                  <Button
-                    onClick={handleAnswer}
-                    disabled={!selected || saving}
-                    className="w-full bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90"
+                {/* Explanation */}
+                {answered && currentQuestion.explanation && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="mt-4 p-4 bg-muted/50 rounded-lg border border-border"
                   >
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    Responder
-                  </Button>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Feedback */}
-                    <div className={`p-4 rounded-lg border ${isCorrect ? "bg-success/5 border-success/30" : "bg-destructive/5 border-destructive/30"}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        {isCorrect ? (
-                          <><CheckCircle className="h-5 w-5 text-success" /><span className="font-bold text-success">Correto! +10 XP</span></>
-                        ) : (
-                          <><XCircle className="h-5 w-5 text-destructive" /><span className="font-bold text-destructive">Incorreto</span></>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{currentQuestion.explanation}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1" onClick={handleReviewLater}>
-                        <RotateCcw className="h-4 w-4 mr-1" /> Revisar depois
-                      </Button>
-                      <Button variant="outline" size="sm" className="flex-1" onClick={() => {
-                        toast({ title: "Questão reportada ✅", description: "Obrigado pelo feedback! Vamos analisar." });
-                      }}>
-                        <Flag className="h-4 w-4 mr-1" /> Reportar
-                      </Button>
-                    </div>
-                    <Button onClick={handleNext} className="w-full bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90">
-                      Próxima questão <ChevronRight className="ml-1 h-4 w-4" />
+                    <p className="text-sm font-semibold text-foreground mb-1">Explicação:</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{currentQuestion.explanation}</p>
+                  </motion.div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center justify-between mt-6">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleReviewLater}
+                      className="text-muted-foreground"
+                    >
+                      <RotateCcw className="h-4 w-4 mr-1" /> Revisar
                     </Button>
                   </div>
-                )}
+
+                  {!answered ? (
+                    <Button
+                      onClick={handleAnswer}
+                      disabled={!selected || saving}
+                      className="bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90"
+                    >
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                      Responder
+                    </Button>
+                  ) : (
+                    <Button onClick={handleNext} className="bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90">
+                      Próxima <ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
             </motion.div>
           </AnimatePresence>
