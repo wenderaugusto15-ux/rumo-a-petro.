@@ -7,6 +7,7 @@ import {
 
 const navItems = [
   { icon: LayoutDashboard, label: "Visão Geral", path: "/admin" },
+  { icon: Shield, label: "Usuários", path: "/admin/usuarios" },
   { icon: BookOpen, label: "Questões", path: "/admin/questoes" },
   { icon: Layers, label: "Matérias & Assuntos", path: "/admin/materias" },
   { icon: BookOpen, label: "Estudos", path: "/admin/estudos" },
