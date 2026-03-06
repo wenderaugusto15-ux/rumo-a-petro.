@@ -237,9 +237,9 @@ export async function seedModulos(onLog: LogCallback): Promise<boolean> {
 }
 
 export async function seedConteudos(onLog: LogCallback): Promise<boolean> {
-  onLog({ message: "\nIniciando seed de conteúdos de exemplo...", type: "info" });
+  onLog({ message: "\nIniciando seed de conteúdos (modo UPSERT)...", type: "info" });
   let created = 0;
-  let skipped = 0;
+  let updated = 0;
 
   const { data: modulos } = await supabase.from("modulos").select("id, titulo, materia_id");
   if (!modulos || modulos.length === 0) {
@@ -248,8 +248,17 @@ export async function seedConteudos(onLog: LogCallback): Promise<boolean> {
   }
 
   for (const modulo of modulos) {
-    // Create one sample text content per module
     const titulo = `Resumo: ${modulo.titulo}`;
+    const newData = {
+      modulo_id: modulo.id,
+      titulo,
+      descricao: `Material de estudo sobre ${modulo.titulo}`,
+      tipo: "texto",
+      conteudo_texto: `<h2>${modulo.titulo}</h2><p>Conteúdo de estudo para o concurso Petrobras (Cesgranrio). Este é um material introdutório sobre o tema.</p><p>Estude com atenção e faça anotações!</p>`,
+      ordem: 1,
+      ativo: true,
+    };
+
     const { data: existing } = await supabase
       .from("conteudos")
       .select("id")
@@ -258,30 +267,28 @@ export async function seedConteudos(onLog: LogCallback): Promise<boolean> {
       .maybeSingle();
 
     if (existing) {
-      onLog({ message: `⏭️ Conteúdo "${titulo}" já existe`, type: "info" });
-      skipped++;
-      continue;
+      const { error } = await supabase
+        .from("conteudos")
+        .update(newData)
+        .eq("id", existing.id);
+      if (error) {
+        onLog({ message: `❌ Erro ao atualizar "${titulo}": ${error.message}`, type: "error" });
+        return false;
+      }
+      onLog({ message: `🔄 Conteúdo "${titulo}" atualizado`, type: "success" });
+      updated++;
+    } else {
+      const { error } = await supabase.from("conteudos").insert(newData);
+      if (error) {
+        onLog({ message: `❌ Erro ao criar "${titulo}": ${error.message}`, type: "error" });
+        return false;
+      }
+      onLog({ message: `✅ Conteúdo "${titulo}" criado`, type: "success" });
+      created++;
     }
-
-    const { error } = await supabase.from("conteudos").insert({
-      modulo_id: modulo.id,
-      titulo,
-      descricao: `Material de estudo sobre ${modulo.titulo}`,
-      tipo: "texto",
-      conteudo_texto: `<h2>${modulo.titulo}</h2><p>Conteúdo de estudo para o concurso Petrobras (Cesgranrio). Este é um material introdutório sobre o tema.</p><p>Estude com atenção e faça anotações!</p>`,
-      ordem: 1,
-      ativo: true,
-    });
-
-    if (error) {
-      onLog({ message: `❌ Erro ao criar conteúdo "${titulo}": ${error.message}`, type: "error" });
-      return false;
-    }
-    onLog({ message: `✅ Conteúdo "${titulo}" criado`, type: "success" });
-    created++;
   }
 
-  onLog({ message: `\nConteúdos: ${created} criados, ${skipped} já existiam`, type: "info" });
+  onLog({ message: `\nConteúdos: ${created} criados, ${updated} atualizados`, type: "info" });
   return true;
 }
 
