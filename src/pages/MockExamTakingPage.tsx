@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, ChevronLeft, ChevronRight, Flag, CheckCircle2, Loader2, AlertTriangle } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 
 interface ExamQuestion {
   order_index: number;
@@ -33,6 +34,7 @@ export default function MockExamTakingPage() {
   const { examId } = useParams<{ examId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { trackEvent } = useMetaPixel();
 
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -173,6 +175,7 @@ export default function MockExamTakingPage() {
 
       setScore(scorePercent);
       setFinished(true);
+      trackEvent("CompleteSimulado", { score: scorePercent, questions: questions.length });
       toast({ title: "Simulado finalizado!", description: `Sua nota: ${scorePercent}%` });
     } catch (err: any) {
       toast({ title: "Erro ao finalizar", description: err.message, variant: "destructive" });

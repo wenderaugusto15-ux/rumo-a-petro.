@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 
 const benefits = [
   "Questões no padrão Cesgranrio com explicação",
@@ -30,6 +31,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [forgotMode, setForgotMode] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
+  const { trackEvent, trackCompleteRegistration } = useMetaPixel();
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -74,6 +76,7 @@ export default function AuthPage() {
           options: { data: { name } },
         });
         if (error) throw error;
+        trackCompleteRegistration();
         toast({
           title: "Conta criada! ✉️",
           description: "Verifique seu email para confirmar o cadastro.",
@@ -81,6 +84,7 @@ export default function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        trackEvent("Login");
       }
     } catch (err: any) {
       console.error("Auth error:", err);

@@ -13,6 +13,7 @@ import { ptBR } from "date-fns/locale";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 
 interface Track {
   id: string;
@@ -52,6 +53,7 @@ export default function OnboardingPage() {
   const [noDateSet, setNoDateSet] = useState(false);
 
   const [saving, setSaving] = useState(false);
+  const { trackEvent } = useMetaPixel();
 
   useEffect(() => {
     supabase.from("tracks").select("*").eq("active", true).then(({ data }) => {
@@ -89,6 +91,7 @@ export default function OnboardingPage() {
       }, { onConflict: "user_id" });
 
       toast({ title: "Plano criado com sucesso! 🎉", description: "Sua jornada de estudos começa agora." });
+      trackEvent("OnboardingComplete");
       navigate("/app");
     } catch (err) {
       toast({ title: "Erro ao salvar", description: "Tente novamente.", variant: "destructive" });

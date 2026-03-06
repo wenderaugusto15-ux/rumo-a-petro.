@@ -6,6 +6,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserArea } from "@/hooks/useUserArea";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 import AreaWarningBanner from "@/components/AreaWarningBanner";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
@@ -67,6 +68,7 @@ export default function MockExamsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { subjectIds, hasArea } = useUserArea();
+  const { trackEvent } = useMetaPixel();
   const [starting, setStarting] = useState<string | null>(null);
   const [recentResults, setRecentResults] = useState<RecentResult[]>([]);
   const [loadingResults, setLoadingResults] = useState(true);
@@ -143,6 +145,7 @@ export default function MockExamsPage() {
       if (insertErr) throw insertErr;
 
       toast({ title: `${exam.title} iniciado!`, description: `${exam.totalQuestions} questões preparadas.` });
+      trackEvent("StartSimulado", { type: exam.type, questions: exam.totalQuestions });
       navigate(`/app/simulado/${mockExam.id}`);
     } catch (err: any) {
       toast({ title: "Erro ao iniciar simulado", description: err?.message || "Tente novamente.", variant: "destructive" });
