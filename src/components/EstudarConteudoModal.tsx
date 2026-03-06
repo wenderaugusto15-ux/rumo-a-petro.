@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Play, FileText, FileDown, CheckCircle2, Save, ExternalLink, Clock, StickyNote,
 } from "lucide-react";
+import { hasValidContent as hasValidContentCheck } from "@/lib/contentValidation";
 
 interface EstudarConteudoModalProps {
   conteudoId: string | null;
@@ -111,13 +112,7 @@ export default function EstudarConteudoModal({ conteudoId, open, onOpenChange }:
 
   const isDone = !!progressRecord?.concluido;
 
-  const hasContent = (c: any) => {
-    if (c.tipo === "video" && c.video_url) return true;
-    if (c.tipo === "texto" && c.conteudo_texto) return true;
-    if (c.tipo === "pdf" && c.pdf_url) return true;
-    return false;
-  };
-
+  const hasContent = (c: any) => hasValidContentCheck(c);
   const conteudoHasContent = conteudo ? hasContent(conteudo) : false;
 
   const tipoIcon = (tipo: string) => {

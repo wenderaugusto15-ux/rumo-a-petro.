@@ -13,6 +13,7 @@ import {
   GraduationCap, Scale, Briefcase, Globe, Shield, Cpu,
   Wrench, Zap, BarChart3, FileText, LucideIcon
 } from "lucide-react";
+import { hasValidContent } from "@/lib/contentValidation";
 
 const iconMap: Record<string, LucideIcon> = {
   BookOpen, Calculator, Atom, FlaskConical, Cog, Monitor,
@@ -64,13 +65,7 @@ export default function EstudosPage() {
         .from("conteudos")
         .select("id, modulo_id, tipo, video_url, conteudo_texto, pdf_url")
         .eq("ativo", true);
-      // Filter out conteudos without actual content
-      return (data || []).filter(c => {
-        if (c.tipo === "video" && c.video_url) return true;
-        if (c.tipo === "texto" && c.conteudo_texto) return true;
-        if (c.tipo === "pdf" && c.pdf_url) return true;
-        return false;
-      });
+      return (data || []).filter(c => hasValidContent(c));
     },
   });
 
