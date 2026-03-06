@@ -36,7 +36,7 @@ const mockExamTypes: ExamTypeConfig[] = [
     duration: "~4 horas",
     icon: BookOpen,
     locked: false,
-    subjects: ["Todas as matérias da trilha"],
+    subjects: ["Todas as matérias da sua área"],
     type: "full",
     totalQuestions: 60,
   },
@@ -97,7 +97,7 @@ export default function MockExamsPage() {
         .single();
 
       if (!profile?.track_id) {
-        toast({ title: "Trilha não definida", description: "Selecione sua área de atuação no onboarding primeiro.", variant: "destructive" });
+        toast({ title: "Área Específica não definida", description: "Selecione sua Área Específica no onboarding primeiro.", variant: "destructive" });
         setStarting(null);
         return;
       }
@@ -123,7 +123,7 @@ export default function MockExamsPage() {
       const allSubjectIds = [...new Set([...generalSubjectIds, ...specificSubjectIds])];
 
       if (allSubjectIds.length === 0) {
-        toast({ title: "Sem matérias configuradas", description: "Sua trilha ainda não possui matérias associadas.", variant: "destructive" });
+        toast({ title: "Sem matérias configuradas", description: "Sua Área Específica ainda não possui matérias associadas.", variant: "destructive" });
         setStarting(null);
         return;
       }
@@ -138,7 +138,7 @@ export default function MockExamsPage() {
 
       if (qErr) throw qErr;
       if (!questions || questions.length < exam.totalQuestions) {
-        toast({ title: "Questões insuficientes", description: `Apenas ${questions?.length || 0} questões disponíveis para sua trilha.`, variant: "destructive" });
+        toast({ title: "Questões insuficientes", description: `Apenas ${questions?.length || 0} questões disponíveis para sua área.`, variant: "destructive" });
         setStarting(null);
         return;
       }

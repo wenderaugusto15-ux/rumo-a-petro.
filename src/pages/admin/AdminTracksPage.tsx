@@ -39,7 +39,7 @@ export default function AdminTracksPage() {
       }
     },
     onSuccess: () => {
-      toast({ title: "Trilha salva!" });
+      toast({ title: "Área Específica salva!" });
       qc.invalidateQueries({ queryKey: ["admin-tracks"] });
       setOpen(false);
       resetForm();
@@ -53,11 +53,11 @@ export default function AdminTracksPage() {
     <AdminLayout>
       <div className="p-6 lg:p-8 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-extrabold text-foreground">Trilhas</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">Áreas Específicas</h1>
           <Dialog open={open} onOpenChange={v => { setOpen(v); if (!v) resetForm(); }}>
-            <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-2" />Nova Trilha</Button></DialogTrigger>
+            <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-2" />Nova Área Específica</Button></DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>{editId ? "Editar" : "Nova"} Trilha</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editId ? "Editar" : "Nova"} Área Específica</DialogTitle></DialogHeader>
               <form className="space-y-4" onSubmit={e => { e.preventDefault(); save.mutate(); }}>
                 <div><Label>Nome</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required /></div>
                 <div><Label>Categoria</Label><Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} placeholder="Ex: Nível Superior" /></div>
