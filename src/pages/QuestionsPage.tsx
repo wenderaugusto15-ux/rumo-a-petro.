@@ -163,7 +163,7 @@ export default function QuestionsPage() {
     setSaving(true);
 
     const timeSpent = Math.round((Date.now() - startTime.current) / 1000);
-    const isCorrect = selected === currentQuestion.correct_option;
+    const isCorrect = selected.trim().toLowerCase() === currentQuestion.correct_option.trim().toLowerCase();
 
     try {
       // Record attempt
@@ -284,7 +284,7 @@ export default function QuestionsPage() {
       ]
     : [];
 
-  const isCorrect = selected === currentQuestion?.correct_option;
+  const isCorrect = (selected || "").trim().toLowerCase() === (currentQuestion?.correct_option || "").trim().toLowerCase();
 
   return (
     <AppLayout>
