@@ -39,12 +39,26 @@ export function useAcesso() {
     enabled: !!user,
   });
 
+  // Check if user is admin (full access)
+  const { data: isAdmin } = useQuery({
+    queryKey: ["user-role", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("has_role", {
+        _user_id: user!.id,
+        _role: "admin",
+      });
+      return !!data;
+    },
+    enabled: !!user,
+  });
+
   const plano = profile?.plano || "free";
   const planoAtivoAte = profile?.plano_ativo_ate ? new Date(profile.plano_ativo_ate) : null;
   const now = new Date();
 
-  // Premium if: profile says premium AND not expired, OR subscription says pro
+  // Premium if: admin OR profile says premium AND not expired, OR subscription says pro
   const isPremium =
+    !!isAdmin ||
     (plano === "premium" && planoAtivoAte && planoAtivoAte > now) ||
     subscription?.plan === "pro";
 
