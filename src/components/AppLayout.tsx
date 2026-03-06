@@ -61,7 +61,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {sidebarItems.map((item) => (
+          {sidebarItems
+            .filter((item) => !(isPremium && item.path === "/app/upgrade"))
+            .map((item) => (
             <Link
               key={item.path}
               to={item.path}
