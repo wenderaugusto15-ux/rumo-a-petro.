@@ -62,9 +62,15 @@ export default function EstudosPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("conteudos")
-        .select("id, modulo_id")
+        .select("id, modulo_id, tipo, video_url, conteudo_texto, pdf_url")
         .eq("ativo", true);
-      return data || [];
+      // Filter out conteudos without actual content
+      return (data || []).filter(c => {
+        if (c.tipo === "video" && c.video_url) return true;
+        if (c.tipo === "texto" && c.conteudo_texto) return true;
+        if (c.tipo === "pdf" && c.pdf_url) return true;
+        return false;
+      });
     },
   });
 
