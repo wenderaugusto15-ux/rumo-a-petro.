@@ -152,7 +152,7 @@ export default function EstudosPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(materias || []).map((materia) => {
+            {(materias || []).filter(m => (materiaConteudos.get(m.id) || []).length > 0).map((materia) => {
               const Icon = getIcon(materia.icone);
               const conteudoIds = materiaConteudos.get(materia.id) || [];
               const done = conteudoIds.filter(id => completedIds.has(id)).length;
