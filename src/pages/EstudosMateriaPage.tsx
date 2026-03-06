@@ -21,6 +21,7 @@ import EstudarConteudoModal from "@/components/EstudarConteudoModal";
 import UpgradeModal from "@/components/UpgradeModal";
 import { useAcesso } from "@/hooks/useAcesso";
 import UpgradeBanner from "@/components/UpgradeBanner";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 
 export default function EstudosMateriaPage() {
   const { materiaId } = useParams<{ materiaId: string }>();
@@ -31,6 +32,7 @@ export default function EstudosMateriaPage() {
   const queryClient = useQueryClient();
   const [selectedConteudoId, setSelectedConteudoId] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const { trackEvent } = useMetaPixel();
 
   const { data: materia, isLoading: loadingMateria } = useQuery({
     queryKey: ["materia", materiaId],
@@ -122,6 +124,7 @@ export default function EstudosMateriaPage() {
       setShowUpgrade(true);
     } else {
       setSelectedConteudoId(conteudoId);
+      trackEvent("WatchLesson", { conteudoId });
     }
   };
 
