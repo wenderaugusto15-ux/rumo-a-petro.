@@ -107,7 +107,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               Painel Admin
             </Link>
           )}
-          <Link to="/app/perfil" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
+          <Link to="/app/configuracoes" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+            isActive("/app/configuracoes")
+              ? "bg-sidebar-accent text-sidebar-primary"
+              : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+          }`}>
             <Settings className="h-5 w-5" />
             Configurações
           </Link>

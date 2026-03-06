@@ -26,6 +26,7 @@ const UpgradePage = lazy(() => import("./pages/UpgradePage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const EstudosPage = lazy(() => import("./pages/EstudosPage"));
 const EstudosMateriaPage = lazy(() => import("./pages/EstudosMateriaPage"));
+const ConfiguracoesPage = lazy(() => import("./pages/ConfiguracoesPage"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminQuestionsPage = lazy(() => import("./pages/admin/AdminQuestionsPage"));
 const AdminSubjectsPage = lazy(() => import("./pages/admin/AdminSubjectsPage"));
