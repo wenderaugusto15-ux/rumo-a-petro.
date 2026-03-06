@@ -53,7 +53,7 @@ async function fetchUserArea(userId: string): Promise<Omit<UserAreaData, "isLoad
     specificIds = (trackSubjects || []).map((ts) => ts.subject_id);
   }
 
-  // 5. Combine unique IDs
+  // 5. Combine unique IDs — if no track, only general subjects
   const subjectIds = [...new Set([...generalIds, ...specificIds])];
 
   return {

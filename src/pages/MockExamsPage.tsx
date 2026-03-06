@@ -92,8 +92,8 @@ export default function MockExamsPage() {
     setStarting(exam.title);
 
     try {
-      if (!hasArea || subjectIds.length === 0) {
-        toast({ title: "Área Específica não definida", description: "Selecione sua Área Específica no Plano de Estudo primeiro.", variant: "destructive" });
+      if (subjectIds.length === 0) {
+        toast({ title: "Nenhuma matéria disponível", description: "Aguarde o carregamento ou selecione uma Área Específica.", variant: "destructive" });
         setStarting(null);
         return;
       }
