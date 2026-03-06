@@ -143,7 +143,7 @@ export default function MockExamTakingPage() {
         mock_exam_id: examId,
         question_id: q.question.id,
         chosen_option: answers.get(q.question.id) || "",
-        is_correct: answers.get(q.question.id) === q.question.correct_option,
+        is_correct: (answers.get(q.question.id) || "").toLowerCase() === q.question.correct_option.toLowerCase(),
         time_spent_seconds: 0,
       })).filter((a) => a.chosen_option !== "");
 
@@ -193,7 +193,7 @@ export default function MockExamTakingPage() {
 
   // Finished state - show results
   if (finished) {
-    const correct = questions.filter((q) => answers.get(q.question.id) === q.question.correct_option).length;
+    const correct = questions.filter((q) => (answers.get(q.question.id) || "").toLowerCase() === q.question.correct_option.toLowerCase()).length;
     return (
       <AppLayout>
         <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto">
@@ -213,7 +213,7 @@ export default function MockExamTakingPage() {
             <div className="text-left space-y-4 mb-8">
               {questions.map((q, i) => {
                 const chosen = answers.get(q.question.id);
-                const isCorrect = chosen === q.question.correct_option;
+                const isCorrect = (chosen || "").toLowerCase() === q.question.correct_option.toLowerCase();
                 return (
                   <div key={q.question.id} className={`p-4 rounded-lg border ${isCorrect ? "border-success/30 bg-success/5" : "border-destructive/30 bg-destructive/5"}`}>
                     <div className="flex items-start gap-2 mb-2">
