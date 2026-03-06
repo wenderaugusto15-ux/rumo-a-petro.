@@ -19,7 +19,20 @@ export function useSubscription() {
     enabled: !!user,
   });
 
-  const isPro = subscription?.plan === "pro";
+  // Check if user is admin (full access)
+  const { data: isAdmin } = useQuery({
+    queryKey: ["user-role", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("has_role", {
+        _user_id: user!.id,
+        _role: "admin",
+      });
+      return !!data;
+    },
+    enabled: !!user,
+  });
+
+  const isPro = !!isAdmin || subscription?.plan === "pro";
 
   const canAccessContent = (ordem: number) => isPro || ordem <= 3;
 
