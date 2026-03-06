@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { TrendingUp, Target, AlertTriangle, Award, Clock, Loader2 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { usePerformanceData } from "@/hooks/usePerformanceData";
+import { useUserArea } from "@/hooks/useUserArea";
+import AreaWarningBanner from "@/components/AreaWarningBanner";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, RadarChart, Radar, PolarGrid,
@@ -16,7 +18,8 @@ function formatTime(seconds: number): string {
 }
 
 export default function PerformancePage() {
-  const { data, isLoading } = usePerformanceData();
+  const { subjectIds, hasArea } = useUserArea();
+  const { data, isLoading } = usePerformanceData(subjectIds);
 
   if (isLoading) {
     return (
@@ -53,6 +56,8 @@ export default function PerformancePage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Dados reais baseados nas suas respostas</p>
         </div>
+
+        {!hasArea && <AreaWarningBanner />}
 
         {/* Stats row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

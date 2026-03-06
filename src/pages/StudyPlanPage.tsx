@@ -19,11 +19,14 @@ import {
   Settings,
   Save,
   AlertCircle,
+  Search,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserArea, useInvalidateUserArea } from "@/hooks/useUserArea";
 import {
   format,
   startOfMonth,
@@ -68,6 +71,13 @@ interface PlanSettings {
   review_intervals_days: number[] | null;
 }
 
+interface Track {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+}
+
 const views = ["Hoje", "Semana", "Calendário"] as const;
 const weekDayLabels = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
@@ -91,6 +101,8 @@ const typeIcons = {
 
 export default function StudyPlanPage() {
   const { user } = useAuth();
+  const { trackId, trackName, subjectIds, hasArea } = useUserArea();
+  const invalidateArea = useInvalidateUserArea();
   const [activeView, setActiveView] = useState<typeof views[number]>("Hoje");
   const [sessions, setSessions] = useState<DbSession[]>([]);
   const [reviews, setReviews] = useState<DbReview[]>([]);
@@ -100,6 +112,13 @@ export default function StudyPlanPage() {
   const [subjects, setSubjects] = useState<{ id: string; name: string }[]>([]);
   const [subjectMap, setSubjectMap] = useState<Record<string, string>>({});
   const [topicMap, setTopicMap] = useState<Record<string, string>>({});
+
+  // Area change modal
+  const [showAreaModal, setShowAreaModal] = useState(false);
+  const [allTracks, setAllTracks] = useState<Track[]>([]);
+  const [areaSearch, setAreaSearch] = useState("");
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [savingArea, setSavingArea] = useState(false);
 
   // Config modal
   const [showConfig, setShowConfig] = useState(false);
@@ -119,12 +138,16 @@ export default function StudyPlanPage() {
     type: "questions" as keyof typeof typeIcons,
   });
 
-  // Fetch lookups
+  // Fetch lookups - filter by user area
   useEffect(() => {
     const fetchLookups = async () => {
+      let subQuery = supabase.from("subjects").select("id, name").eq("active", true);
+      if (subjectIds.length > 0) {
+        subQuery = subQuery.in("id", subjectIds);
+      }
       const [subRes, topRes] = await Promise.all([
-        supabase.from("subjects").select("id, name"),
-        supabase.from("topics").select("id, name"),
+        subQuery,
+        supabase.from("topics").select("id, name, subject_id").eq("active", true),
       ]);
       if (subRes.data) {
         setSubjects(subRes.data);
@@ -139,7 +162,7 @@ export default function StudyPlanPage() {
       }
     };
     fetchLookups();
-  }, []);
+  }, [subjectIds]);
 
   // Fetch sessions, reviews & settings
   useEffect(() => {
@@ -165,6 +188,41 @@ export default function StudyPlanPage() {
     };
     fetchData();
   }, [user]);
+
+  // Load tracks for area modal
+  useEffect(() => {
+    if (showAreaModal && allTracks.length === 0) {
+      supabase.from("tracks").select("id, name, description, category").eq("active", true).order("name")
+        .then(({ data }) => setAllTracks(data || []));
+    }
+  }, [showAreaModal]);
+
+  const openAreaModal = () => {
+    setSelectedTrackId(trackId);
+    setAreaSearch("");
+    setShowAreaModal(true);
+  };
+
+  const confirmAreaChange = async () => {
+    if (!user || !selectedTrackId) return;
+    setSavingArea(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ track_id: selectedTrackId })
+      .eq("user_id", user.id);
+    setSavingArea(false);
+    if (error) {
+      toast.error("Erro ao alterar área");
+      return;
+    }
+    toast.success("Área Específica alterada com sucesso!");
+    invalidateArea();
+    setShowAreaModal(false);
+  };
+
+  const filteredTracks = allTracks.filter((t) =>
+    t.name.toLowerCase().includes(areaSearch.toLowerCase())
+  );
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
@@ -394,6 +452,31 @@ export default function StudyPlanPage() {
               <Plus className="h-4 w-4 mr-1" /> Sessão
             </Button>
           </div>
+        </div>
+
+        {/* Minha Área Específica Card */}
+        <div className="bg-card rounded-xl p-4 shadow-card border border-border mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <MapPin className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-foreground">Minha Área Específica</h3>
+                {hasArea ? (
+                  <p className="text-sm text-primary font-medium">{trackName}</p>
+                ) : (
+                  <p className="text-sm text-accent font-medium">Nenhuma área selecionada</p>
+                )}
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={openAreaModal}>
+              {hasArea ? "Alterar Área" : "Selecionar Área"}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            📚 Matérias Gerais já estão incluídas automaticamente na sua grade.
+          </p>
         </div>
 
         {/* Countdown Banner */}
@@ -747,6 +830,83 @@ export default function StudyPlanPage() {
                 </Button>
                 <Button variant="outline" onClick={saveSettings} className="w-full">
                   <Save className="h-4 w-4 mr-2" /> Salvar Configurações
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Modal - Alterar Área Específica */}
+      {showAreaModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setShowAreaModal(false)}>
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-card rounded-t-2xl sm:rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto border border-border"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-border flex items-center justify-between sticky top-0 bg-card rounded-t-2xl z-10">
+              <h3 className="text-lg font-bold text-foreground">Selecionar Área Específica</h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowAreaModal(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="p-4 space-y-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Buscar área..."
+                  value={areaSearch}
+                  onChange={(e) => setAreaSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-border rounded-xl bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                />
+              </div>
+
+              {/* Info */}
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 text-xs text-muted-foreground">
+                📚 Matérias Gerais continuarão incluídas automaticamente na sua grade.
+              </div>
+
+              {/* Track list */}
+              <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+                {filteredTracks.map((track) => (
+                  <button
+                    key={track.id}
+                    onClick={() => setSelectedTrackId(track.id)}
+                    className={`w-full text-left p-3 rounded-xl border transition-all ${
+                      selectedTrackId === track.id
+                        ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className="font-semibold text-sm text-foreground">{track.name}</div>
+                    {track.description && (
+                      <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{track.description}</div>
+                    )}
+                    {track.category && (
+                      <span className="text-xs text-primary/80 font-medium">{track.category}</span>
+                    )}
+                  </button>
+                ))}
+                {filteredTracks.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">Nenhuma área encontrada.</p>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" className="flex-1" onClick={() => setShowAreaModal(false)}>
+                  Cancelar
+                </Button>
+                <Button
+                  className="flex-1 bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90"
+                  disabled={!selectedTrackId || savingArea}
+                  onClick={confirmAreaChange}
+                >
+                  {savingArea ? "Salvando..." : "Confirmar alteração"}
                 </Button>
               </div>
             </div>

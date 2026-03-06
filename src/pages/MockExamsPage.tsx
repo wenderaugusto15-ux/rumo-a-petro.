@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserArea } from "@/hooks/useUserArea";
+import AreaWarningBanner from "@/components/AreaWarningBanner";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 
@@ -26,7 +28,7 @@ const mockExamTypes: ExamTypeConfig[] = [
     duration: "~30 min",
     icon: Zap,
     locked: false,
-    subjects: ["Português", "Matemática", "Inglês"],
+    subjects: ["Gerais + Área Específica"],
     type: "quick",
     totalQuestions: 20,
   },
@@ -64,6 +66,7 @@ interface RecentResult {
 export default function MockExamsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { subjectIds, hasArea } = useUserArea();
   const [starting, setStarting] = useState<string | null>(null);
   const [recentResults, setRecentResults] = useState<RecentResult[]>([]);
   const [loadingResults, setLoadingResults] = useState(true);
@@ -89,51 +92,18 @@ export default function MockExamsPage() {
     setStarting(exam.title);
 
     try {
-      // 1. Get user's track to filter questions by relevant subjects
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("track_id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!profile?.track_id) {
-        toast({ title: "Área Específica não definida", description: "Selecione sua Área Específica no onboarding primeiro.", variant: "destructive" });
+      if (!hasArea || subjectIds.length === 0) {
+        toast({ title: "Área Específica não definida", description: "Selecione sua Área Específica no Plano de Estudo primeiro.", variant: "destructive" });
         setStarting(null);
         return;
       }
 
-      // 2. Get subjects linked to user's track
-      const { data: trackSubjects } = await supabase
-        .from("track_subjects")
-        .select("subject_id")
-        .eq("track_id", profile.track_id);
-
-      const specificSubjectIds = (trackSubjects || []).map(ts => ts.subject_id);
-
-      // 3. Get general subjects (is_general = true) — these go to all students
-      const { data: generalSubjects } = await supabase
-        .from("subjects")
-        .select("id")
-        .eq("is_general", true)
-        .eq("active", true);
-
-      const generalSubjectIds = (generalSubjects || []).map(s => s.id);
-
-      // 4. Combine: general + track-specific subjects
-      const allSubjectIds = [...new Set([...generalSubjectIds, ...specificSubjectIds])];
-
-      if (allSubjectIds.length === 0) {
-        toast({ title: "Sem matérias configuradas", description: "Sua Área Específica ainda não possui matérias associadas.", variant: "destructive" });
-        setStarting(null);
-        return;
-      }
-
-      // 5. Fetch questions only from relevant subjects
+      // Fetch questions only from relevant subjects (general + specific)
       const { data: questions, error: qErr } = await supabase
         .from("questions")
         .select("id")
         .eq("active", true)
-        .in("subject_id", allSubjectIds)
+        .in("subject_id", subjectIds)
         .limit(500);
 
       if (qErr) throw qErr;
@@ -146,7 +116,7 @@ export default function MockExamsPage() {
       // Shuffle and pick
       const shuffled = questions.sort(() => Math.random() - 0.5).slice(0, exam.totalQuestions);
 
-      // 2. Create mock_exam record
+      // Create mock_exam record
       const { data: mockExam, error: examErr } = await supabase
         .from("mock_exams")
         .insert({
@@ -159,7 +129,7 @@ export default function MockExamsPage() {
 
       if (examErr || !mockExam) throw examErr;
 
-      // 3. Insert mock_exam_questions
+      // Insert mock_exam_questions
       const examQuestions = shuffled.map((q, i) => ({
         mock_exam_id: mockExam.id,
         question_id: q.id,
@@ -172,7 +142,6 @@ export default function MockExamsPage() {
 
       if (insertErr) throw insertErr;
 
-      // 4. Navigate to exam taking page
       toast({ title: `${exam.title} iniciado!`, description: `${exam.totalQuestions} questões preparadas.` });
       navigate(`/app/simulado/${mockExam.id}`);
     } catch (err: any) {
@@ -196,6 +165,8 @@ export default function MockExamsPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Treine como se fosse o dia da prova</p>
         </div>
+
+        {!hasArea && <AreaWarningBanner />}
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {mockExamTypes.map((exam, i) => (
