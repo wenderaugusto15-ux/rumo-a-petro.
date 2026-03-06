@@ -316,6 +316,13 @@ function ConteudosTab() {
         </div>
       </div>
 
+      {incompleteCount > 0 && (
+        <div className="mb-4 p-3 rounded-lg border border-destructive/30 bg-destructive/5 flex items-center gap-2">
+          <Badge variant="destructive" className="text-xs">{incompleteCount}</Badge>
+          <span className="text-sm text-destructive font-medium">material{incompleteCount !== 1 ? "is" : ""} sem conteúdo — preencha antes de ativar!</span>
+        </div>
+      )}
+
       {isLoading ? <Skeleton className="h-48" /> : (
         <Table>
           <TableHeader><TableRow><TableHead>Tipo</TableHead><TableHead>Título</TableHead><TableHead className="hidden sm:table-cell">Módulo</TableHead><TableHead>Ordem</TableHead><TableHead>Ativo</TableHead><TableHead className="w-24">Ações</TableHead></TableRow></TableHeader>
