@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { getCheckoutUrl } from "@/lib/checkoutLinks";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 
 const plans = [
   {
@@ -68,6 +69,7 @@ const plans = [
 
 export default function UpgradePage() {
   const { user } = useAuth();
+  const { trackInitiateCheckout } = useMetaPixel();
 
   const buildCheckoutUrl = (plan: { checkoutUrl?: string; name: string }) => {
     if (!plan.checkoutUrl) return "";
@@ -155,6 +157,7 @@ export default function UpgradePage() {
                 disabled={plan.current}
                 onClick={() => {
                   if (!plan.current && plan.checkoutUrl) {
+                    trackInitiateCheckout({ plan: plan.name });
                     window.open(buildCheckoutUrl(plan), "_blank");
                   }
                 }}

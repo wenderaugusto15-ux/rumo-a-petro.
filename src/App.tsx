@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +10,8 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { Loader2 } from "lucide-react";
 import ChatPetra from "@/components/ChatPetra";
+import { initMetaPixel } from "@/lib/metaPixel";
+import { MetaPixelPageTracker } from "@/components/MetaPixelPageTracker";
 
 // Lazy loaded pages
 const Index = lazy(() => import("./pages/Index"));
@@ -37,6 +39,7 @@ const AdminPlansPage = lazy(() => import("./pages/admin/AdminPlansPage"));
 const AdminEstudosPage = lazy(() => import("./pages/admin/AdminEstudosPage"));
 const AdminSeedEstudosPage = lazy(() => import("./pages/admin/AdminSeedEstudosPage"));
 const AdminUsersPage = lazy(() => import("./pages/admin/AdminUsersPage"));
+const AdminMarketingPage = lazy(() => import("./pages/admin/AdminMarketingPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,7 +56,12 @@ const PageLoader = () => (
   </div>
 );
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    initMetaPixel();
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
@@ -90,17 +98,20 @@ const App = () => (
                 <Route path="/admin/estudos" element={<AdminRoute><AdminEstudosPage /></AdminRoute>} />
                 <Route path="/admin/seed-estudos" element={<AdminRoute><AdminSeedEstudosPage /></AdminRoute>} />
                 <Route path="/admin/usuarios" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
+                <Route path="/admin/marketing" element={<AdminRoute><AdminMarketingPage /></AdminRoute>} />
 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            <MetaPixelPageTracker />
             <ChatPetra />
           </BrowserRouter>
         </ErrorBoundary>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
