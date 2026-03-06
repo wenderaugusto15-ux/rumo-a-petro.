@@ -3,27 +3,26 @@ export function initMetaPixel() {
   const pixelId = import.meta.env.VITE_META_PIXEL_ID;
   if (!pixelId || typeof window === "undefined") return;
 
-  // Avoid double-init
-  if (typeof (window as any).fbq === "function") return;
-
   const w = window as any;
-  const d = document as any;
+  // Avoid double-init
+  if (w.fbq) return;
 
-  const n = (w.fbq = function () {
+  const fbq: any = function () {
     // eslint-disable-next-line prefer-rest-params
-    n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
-  });
-  if (!w._fbq) w._fbq = n;
-  n.push = n;
-  n.loaded = true;
-  n.version = "2.0";
-  n.queue = [] as any[];
+    fbq.callMethod ? fbq.callMethod.apply(fbq, arguments) : fbq.queue.push(arguments);
+  };
+  w._fbq = fbq;
+  w.fbq = fbq;
+  fbq.push = fbq;
+  fbq.loaded = true;
+  fbq.version = "2.0";
+  fbq.queue = [];
 
-  const t = d.createElement("script");
-  t.async = true;
-  t.src = "https://connect.facebook.net/en_US/fbevents.js";
-  const s = d.getElementsByTagName("script")[0];
-  s.parentNode.insertBefore(t, s);
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = "https://connect.facebook.net/en_US/fbevents.js";
+  const first = document.getElementsByTagName("script")[0];
+  first?.parentNode?.insertBefore(script, first);
 
   w.fbq("init", pixelId);
   w.fbq("track", "PageView");
