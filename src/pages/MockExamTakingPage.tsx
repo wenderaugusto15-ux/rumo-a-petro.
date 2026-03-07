@@ -177,6 +177,7 @@ export default function MockExamTakingPage() {
       setFinished(true);
       trackEvent("CompleteSimulado", { score: scorePercent, questions: questions.length });
       toast({ title: "Simulado finalizado!", description: `Sua nota: ${scorePercent}%` });
+      setTimeout(() => navigate("/app/desempenho"), 2000);
     } catch (err: any) {
       toast({ title: "Erro ao finalizar", description: err.message, variant: "destructive" });
     } finally {
