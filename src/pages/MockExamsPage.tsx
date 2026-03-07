@@ -6,6 +6,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserArea } from "@/hooks/useUserArea";
+import { useAcesso } from "@/hooks/useAcesso";
 import { useMetaPixel } from "@/hooks/useMetaPixel";
 import AreaWarningBanner from "@/components/AreaWarningBanner";
 import { Button } from "@/components/ui/button";
