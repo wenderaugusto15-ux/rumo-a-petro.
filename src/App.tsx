@@ -77,14 +77,14 @@ const App = () => {
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/app/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
                 <Route path="/app" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/app/questoes" element={<ProtectedRoute><QuestionsPage /></ProtectedRoute>} />
+                <Route path="/app/questoes" element={<ProtectedRoute><ProRoute><QuestionsPage /></ProRoute></ProtectedRoute>} />
                 <Route path="/app/simulados" element={<ProtectedRoute><MockExamsPage /></ProtectedRoute>} />
                 <Route path="/app/simulado/:examId" element={<ProtectedRoute><MockExamTakingPage /></ProtectedRoute>} />
                 <Route path="/app/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
-                <Route path="/app/plano" element={<ProtectedRoute><StudyPlanPage /></ProtectedRoute>} />
+                <Route path="/app/plano" element={<ProtectedRoute><ProRoute><StudyPlanPage /></ProRoute></ProtectedRoute>} />
                 <Route path="/app/upgrade" element={<ProtectedRoute><UpgradePage /></ProtectedRoute>} />
-                <Route path="/app/estudos" element={<ProtectedRoute><EstudosPage /></ProtectedRoute>} />
-                <Route path="/app/estudos/:materiaId" element={<ProtectedRoute><EstudosMateriaPage /></ProtectedRoute>} />
+                <Route path="/app/estudos" element={<ProtectedRoute><ProRoute><EstudosPage /></ProRoute></ProtectedRoute>} />
+                <Route path="/app/estudos/:materiaId" element={<ProtectedRoute><ProRoute><EstudosMateriaPage /></ProRoute></ProtectedRoute>} />
                 <Route path="/app/configuracoes" element={<ProtectedRoute><ConfiguracoesPage /></ProtectedRoute>} />
                 <Route path="/app/perfil" element={<ProtectedRoute><ConfiguracoesPage /></ProtectedRoute>} />
 
