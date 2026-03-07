@@ -178,6 +178,35 @@ export default function PerformancePage() {
                 </div>
               </div>
             </div>
+
+            {/* CTA Upgrade */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-8 rounded-2xl bg-gradient-to-br from-accent to-accent/80 p-6 sm:p-8 text-center shadow-lg"
+            >
+              <Sparkles className="h-10 w-10 text-accent-foreground mx-auto mb-3" />
+              <h2 className="text-2xl font-extrabold text-accent-foreground mb-2">🚀 Desbloqueie Todo Seu Potencial!</h2>
+              <p className="text-accent-foreground/80 mb-5">Você completou o simulado grátis! Agora imagine ter acesso a:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto mb-6 text-left">
+                {["+500 questões comentadas", "Simulados ilimitados", "Plano de estudos personalizado", "Análise detalhada por matéria"].map((b) => (
+                  <div key={b} className="flex items-center gap-2 text-accent-foreground text-sm font-medium">
+                    <CheckCircle2 className="h-4 w-4 shrink-0" /> {b}
+                  </div>
+                ))}
+              </div>
+              <Button
+                size="lg"
+                className="bg-background text-foreground hover:bg-background/90 font-bold text-base px-8"
+                onClick={() => navigate("/app/upgrade")}
+              >
+                Quero Desbloquear Agora
+              </Button>
+              <p className="text-accent-foreground/60 text-xs mt-4">
+                Redirecionando para oferta especial em {countdown} segundos...
+              </p>
+            </motion.div>
           </>
         )}
       </div>
