@@ -24,7 +24,7 @@ export default function PerformancePage() {
   const navigate = useNavigate();
   const { subjectIds, hasArea } = useUserArea();
   const { data, isLoading } = usePerformanceData(subjectIds);
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(30);
 
   useEffect(() => {
     if (countdown <= 0) {
@@ -204,7 +204,7 @@ export default function PerformancePage() {
                 Quero Desbloquear Agora
               </Button>
               <p className="text-accent-foreground/60 text-xs mt-4">
-                Redirecionando para oferta especial em {countdown} segundos...
+                ⏱️ Oferta especial expira em {countdown} segundos...
               </p>
             </motion.div>
           </>
