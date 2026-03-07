@@ -38,6 +38,8 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [step, setStep] = useState(1);
+  
+  console.log("[Onboarding] Rendered. User:", user?.id, "Step:", step);
 
   // Step 1
   const [tracks, setTracks] = useState<Track[]>([]);
