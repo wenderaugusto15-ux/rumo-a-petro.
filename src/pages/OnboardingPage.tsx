@@ -92,7 +92,7 @@ export default function OnboardingPage() {
 
       toast({ title: "Plano criado com sucesso! 🎉", description: "Sua jornada de estudos começa agora." });
       trackEvent("OnboardingComplete");
-      navigate("/app");
+      navigate("/app/simulados");
     } catch (err) {
       toast({ title: "Erro ao salvar", description: "Tente novamente.", variant: "destructive" });
     } finally {
