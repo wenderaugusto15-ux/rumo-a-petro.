@@ -21,9 +21,19 @@ function formatTime(seconds: number): string {
 }
 
 export default function PerformancePage() {
+  const navigate = useNavigate();
   const { subjectIds, hasArea } = useUserArea();
   const { data, isLoading } = usePerformanceData(subjectIds);
+  const [countdown, setCountdown] = useState(10);
 
+  useEffect(() => {
+    if (countdown <= 0) {
+      navigate("/app/upgrade");
+      return;
+    }
+    const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown, navigate]);
   if (isLoading) {
     return (
       <AppLayout>
