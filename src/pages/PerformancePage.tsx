@@ -1,5 +1,8 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { TrendingUp, Target, AlertTriangle, Award, Clock, Loader2 } from "lucide-react";
+import { TrendingUp, Target, AlertTriangle, Award, Clock, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 import { usePerformanceData } from "@/hooks/usePerformanceData";
 import { useUserArea } from "@/hooks/useUserArea";
