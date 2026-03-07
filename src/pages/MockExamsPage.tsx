@@ -180,7 +180,7 @@ export default function MockExamsPage() {
         {!hasArea && <AreaWarningBanner />}
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {mockExamTypes.map((exam, i) => (
+          {examTypes.map((exam, i) => (
             <motion.div
               key={exam.title}
               initial={{ opacity: 0, y: 20 }}
@@ -209,8 +209,15 @@ export default function MockExamsPage() {
               </div>
               <Button
                 className={exam.locked ? "w-full bg-muted text-muted-foreground" : "w-full bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90"}
-                disabled={exam.locked || starting === exam.title}
-                onClick={() => handleStartExam(exam)}
+                disabled={starting === exam.title}
+                onClick={() => {
+                  if (exam.locked) {
+                    toast({ title: "Acesso Restrito", description: "Essa funcionalidade é exclusiva para assinantes PRO.", variant: "destructive" });
+                    navigate("/app/upgrade");
+                  } else {
+                    handleStartExam(exam);
+                  }
+                }}
               >
                 {starting === exam.title ? (
                   <><Loader2 className="h-4 w-4 animate-spin mr-1" /> Preparando...</>
