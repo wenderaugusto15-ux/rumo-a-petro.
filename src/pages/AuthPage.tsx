@@ -81,6 +81,7 @@ export default function AuthPage() {
           title: "Conta criada! ✉️",
           description: "Verifique seu email para confirmar o cadastro.",
         });
+        setTimeout(() => navigate("/app/simulados"), 2000);
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
