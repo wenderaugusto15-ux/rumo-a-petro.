@@ -70,9 +70,16 @@ export default function MockExamsPage() {
   const { user } = useAuth();
   const { subjectIds, hasArea } = useUserArea();
   const { trackEvent } = useMetaPixel();
+  const { isPremium } = useAcesso();
   const [starting, setStarting] = useState<string | null>(null);
   const [recentResults, setRecentResults] = useState<RecentResult[]>([]);
   const [loadingResults, setLoadingResults] = useState(true);
+
+  // Dynamically set locked based on subscription
+  const examTypes = mockExamTypes.map((exam) => ({
+    ...exam,
+    locked: exam.title === "Simulado Rápido" ? false : !isPremium,
+  }));
 
   // Load real recent results
   useEffect(() => {
