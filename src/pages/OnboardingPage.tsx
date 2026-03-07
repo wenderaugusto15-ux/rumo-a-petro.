@@ -68,6 +68,7 @@ export default function OnboardingPage() {
   );
 
   const toggleDay = (day: string) => {
+    console.log("[Onboarding] Toggling day:", day);
     setSelectedDays((prev) =>
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     );
@@ -94,6 +95,7 @@ export default function OnboardingPage() {
 
       toast({ title: "Plano criado com sucesso! 🎉", description: "Sua jornada de estudos começa agora." });
       trackEvent("OnboardingComplete");
+      console.log("[Onboarding] Redirecionando para: /app/simulados");
       navigate("/app/simulados");
     } catch (err) {
       toast({ title: "Erro ao salvar", description: "Tente novamente.", variant: "destructive" });
@@ -118,8 +120,8 @@ export default function OnboardingPage() {
 
   const [direction, setDirection] = useState(1);
 
-  const goNext = () => { setDirection(1); setStep((s) => Math.min(s + 1, 3)); };
-  const goBack = () => { setDirection(-1); setStep((s) => Math.max(s - 1, 1)); };
+  const goNext = () => { console.log("[Onboarding] Próximo clicado. Passo atual:", step); setDirection(1); setStep((s) => Math.min(s + 1, 3)); };
+  const goBack = () => { console.log("[Onboarding] Voltar clicado. Passo atual:", step); setDirection(-1); setStep((s) => Math.max(s - 1, 1)); };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6">
@@ -174,10 +176,10 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className="flex-1 space-y-2 overflow-y-auto max-h-[220px] pr-1">
-                  {filteredTracks.map((track) => (
-                    <button
-                      key={track.id}
-                      onClick={() => setSelectedTrack(track.id)}
+                    {filteredTracks.map((track) => (
+                      <button
+                        key={track.id}
+                        onClick={() => { console.log("[Onboarding] Área selecionada:", track.name, track.id); setSelectedTrack(track.id); }}
                       className={cn(
                         "w-full text-left p-3 rounded-xl border transition-all",
                         selectedTrack === track.id
