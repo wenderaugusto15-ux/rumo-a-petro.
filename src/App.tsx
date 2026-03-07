@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { ProRoute } from "@/components/ProRoute";
 import { Loader2 } from "lucide-react";
 import ChatPetra from "@/components/ChatPetra";
 import { initMetaPixel } from "@/lib/metaPixel";
