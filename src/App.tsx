@@ -83,8 +83,8 @@ const App = () => {
                 <Route path="/app/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
                 <Route path="/app/plano" element={<ProtectedRoute><ProRoute><StudyPlanPage /></ProRoute></ProtectedRoute>} />
                 <Route path="/app/upgrade" element={<ProtectedRoute><UpgradePage /></ProtectedRoute>} />
-                <Route path="/app/estudos" element={<ProtectedRoute><ProRoute><EstudosPage /></ProRoute></ProtectedRoute>} />
-                <Route path="/app/estudos/:materiaId" element={<ProtectedRoute><ProRoute><EstudosMateriaPage /></ProRoute></ProtectedRoute>} />
+                <Route path="/app/estudos" element={<ProtectedRoute><EstudosPage /></ProtectedRoute>} />
+                <Route path="/app/estudos/:materiaId" element={<ProtectedRoute><EstudosMateriaPage /></ProtectedRoute>} />
                 <Route path="/app/configuracoes" element={<ProtectedRoute><ConfiguracoesPage /></ProtectedRoute>} />
                 <Route path="/app/perfil" element={<ProtectedRoute><ConfiguracoesPage /></ProtectedRoute>} />
 
