@@ -3,15 +3,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserArea } from "@/hooks/useUserArea";
+import { useAcesso } from "@/hooks/useAcesso";
 import AreaWarningBanner from "@/components/AreaWarningBanner";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import {
   BookOpen, Calculator, Atom, FlaskConical, Cog, Monitor,
   GraduationCap, Scale, Briefcase, Globe, Shield, Cpu,
-  Wrench, Zap, BarChart3, FileText, LucideIcon
+  Wrench, Zap, BarChart3, FileText, LucideIcon, Lock, Crown
 } from "lucide-react";
 import { hasValidContent } from "@/lib/contentValidation";
 
@@ -30,10 +33,7 @@ export default function EstudosPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { subjectIds, hasArea } = useUserArea();
-
-  // Note: EstudosPage uses "materias" table (separate from "subjects").
-  // We show all materias for now since they don't have a direct link to tracks/subjects.
-  // TODO: If materias need to be filtered by area, a mapping table would be needed.
+  const { isPremium } = useAcesso();
 
   const { data: materias, isLoading: loadingMaterias } = useQuery({
     queryKey: ["materias-estudo"],
@@ -82,7 +82,6 @@ export default function EstudosPage() {
     enabled: !!user,
   });
 
-  // Build lookup: materia_id -> conteudo_ids
   const materiaConteudos = new Map<string, string[]>();
   if (modulos && conteudos) {
     const moduloToMateria = new Map(modulos.map(m => [m.id, m.materia_id]));
@@ -97,7 +96,6 @@ export default function EstudosPage() {
   }
 
   const completedIds = new Set((progresso || []).map(p => p.conteudo_id));
-
   const totalConteudos = conteudos?.length || 0;
   const totalConcluidos = (conteudos || []).filter(c => completedIds.has(c.id)).length;
   const overallPercent = totalConteudos > 0 ? Math.round((totalConcluidos / totalConteudos) * 100) : 0;
@@ -111,9 +109,41 @@ export default function EstudosPage() {
     }
   }
 
+  const handleCardClick = (materiaId: string) => {
+    if (isPremium) {
+      navigate(`/app/estudos/${materiaId}`);
+    } else {
+      toast({
+        title: "🔒 Conteúdo exclusivo para assinantes PRO",
+        description: "Assine o plano PRO para acessar todas as aulas e materiais.",
+        variant: "destructive",
+      });
+      navigate("/app/upgrade");
+    }
+  };
+
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+        {/* Banner PRO para FREE */}
+        {!isPremium && (
+          <div className="bg-gradient-cta rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+            <div className="flex items-center gap-3 text-accent-foreground">
+              <Crown className="h-6 w-6 shrink-0" />
+              <p className="font-bold text-sm sm:text-base">
+                🔓 Desbloqueie +200 aulas e domine todas as matérias
+              </p>
+            </div>
+            <Button
+              size="sm"
+              className="bg-background text-foreground hover:bg-background/90 font-bold shrink-0"
+              onClick={() => navigate("/app/upgrade")}
+            >
+              Assinar PRO
+            </Button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
@@ -155,14 +185,24 @@ export default function EstudosPage() {
               const percent = total > 0 ? Math.round((done / total) * 100) : 0;
               const numModulos = moduloCountByMateria.get(materia.id) || 0;
               const cor = materia.cor || "#1e3a5f";
+              const isLocked = !isPremium;
 
               return (
                 <Card
                   key={materia.id}
-                  className="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-l-4 group"
+                  className={`transition-all border-l-4 group relative ${
+                    isLocked
+                      ? "opacity-70 cursor-not-allowed"
+                      : "cursor-pointer hover:shadow-lg hover:-translate-y-1"
+                  }`}
                   style={{ borderLeftColor: cor }}
-                  onClick={() => navigate(`/app/estudos/${materia.id}`)}
+                  onClick={() => handleCardClick(materia.id)}
                 >
+                  {isLocked && (
+                    <div className="absolute top-3 right-3 z-10 h-7 w-7 rounded-full bg-muted flex items-center justify-center">
+                      <Lock className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  )}
                   <CardContent className="p-5 space-y-3">
                     <div className="flex items-start gap-3">
                       <div
