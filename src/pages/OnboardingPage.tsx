@@ -39,6 +39,7 @@ export default function OnboardingPage() {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   
+  console.log("=== ONBOARDING MONTADO ===");
   console.log("[Onboarding] Rendered. User:", user?.id, "Step:", step);
 
   // Step 1
