@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, ChevronLeft, ChevronRight, Flag, CheckCircle2, Loader2, AlertTriangle } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight, Flag, CheckCircle2, Loader2, AlertTriangle, TrendingUp } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { useMetaPixel } from "@/hooks/useMetaPixel";
 
@@ -177,7 +177,6 @@ export default function MockExamTakingPage() {
       setFinished(true);
       trackEvent("CompleteSimulado", { score: scorePercent, questions: questions.length });
       toast({ title: "Simulado finalizado!", description: `Sua nota: ${scorePercent}%` });
-      setTimeout(() => navigate("/app/desempenho"), 2000);
     } catch (err: any) {
       toast({ title: "Erro ao finalizar", description: err.message, variant: "destructive" });
     } finally {
@@ -232,14 +231,17 @@ export default function MockExamTakingPage() {
               })}
             </div>
 
-            <div className="flex gap-3">
-              <Button variant="outline" className="flex-1" onClick={() => navigate("/app/simulados")}>
-                Voltar aos Simulados
-              </Button>
-              <Button className="flex-1 bg-gradient-cta text-accent-foreground" onClick={() => navigate("/app/desempenho")}>
-                Ver Desempenho
-              </Button>
-            </div>
+            <Button
+              size="lg"
+              className="w-full bg-gradient-cta text-accent-foreground text-lg font-bold py-6 mb-3"
+              onClick={() => navigate("/app/desempenho")}
+            >
+              <TrendingUp className="h-5 w-5 mr-2" />
+              Ver Meu Desempenho Detalhado
+            </Button>
+            <Button variant="outline" className="w-full" onClick={() => navigate("/app/simulados")}>
+              Voltar aos Simulados
+            </Button>
           </motion.div>
         </div>
       </AppLayout>
