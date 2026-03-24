@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Clock, TrendingUp, User,
-  Zap, LogOut, Award, CreditCard, Settings, Shield
+  Zap, LogOut, Award, CreditCard, Settings, Shield, GraduationCap
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
