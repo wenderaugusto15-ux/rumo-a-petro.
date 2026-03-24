@@ -140,7 +140,7 @@ export default function Dashboard() {
             </div>
           </motion.div>
         ) : (
-        {/* Cards Grid */}
+          <>
         <motion.div initial="hidden" animate="visible" className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-8">
           {/* Study Plan Card */}
           <motion.div variants={fadeUp} custom={3} className="bg-card rounded-xl p-5 shadow-card border border-border hover:shadow-card-hover transition-shadow">
