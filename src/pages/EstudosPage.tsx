@@ -3,6 +3,7 @@ import { BookOpen, ChevronRight, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import AppLayout from "@/components/AppLayout";
 import { useMateriasComProgresso } from "@/hooks/useEstudos";
+import ProContentOverlay from "@/components/ProContentOverlay";
 
 const iconMap: Record<string, string> = {
   calculator: "🧮",
