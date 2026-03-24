@@ -66,6 +66,8 @@ export default function Dashboard() {
     weakestSubject, weakestAccuracy,
   } = data;
 
+  const isNewUser = totalQuestionsAnswered === 0 && weekSessions.done === 0;
+
   const todayProgress = todayMinutes.planned > 0 ? Math.round((todayMinutes.done / todayMinutes.planned) * 100) : 0;
   const weekProgress = weekSessions.total > 0 ? Math.round((weekSessions.done / weekSessions.total) * 100) : 0;
 
