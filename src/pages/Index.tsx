@@ -171,17 +171,12 @@ export default function Index() {
               Treinamento inteligente focado 100% no padrão Cesgranrio. Questões comentadas, simulados cronometrados, plano personalizado e análise de desempenho — tudo para maximizar suas chances.
             </motion.p>
             <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link to={ctaPath} className="w-full sm:w-auto">
-                <Button size="lg" className="bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 transition-all text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 animate-pulse-glow w-full">
-                  {user ? "Acessar Plataforma" : "Começar minha preparação agora"}
-                  <ChevronRight className="ml-2 h-5 w-5" />
+              <Link to="/cadastro" className="w-full sm:w-auto">
+                <Button size="lg" className="bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 transition-all text-lg sm:text-xl font-extrabold px-8 sm:px-10 py-6 sm:py-7 animate-pulse-glow w-full uppercase tracking-wide">
+                  COMEÇAR AGORA
+                  <ChevronRight className="ml-2 h-6 w-6" />
                 </Button>
               </Link>
-              <a href="#como-funciona" className="w-full sm:w-auto">
-                <Button size="lg" className="bg-success text-success-foreground hover:bg-success/85 transition-all text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 w-full shadow-lg">
-                  Ver como funciona
-                </Button>
-              </a>
             </motion.div>
             <motion.div variants={fadeUp} custom={4} className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 text-white/60 text-sm">
               <span className="flex items-center gap-1"><CheckCircle className="h-4 w-4 text-success" /> Gratuito para começar</span>
