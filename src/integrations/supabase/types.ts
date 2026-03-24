@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
@@ -53,95 +53,6 @@ export type Database = {
           id?: string
           name?: string
           rule_json?: Json | null
-        }
-        Relationships: []
-      }
-      conteudos: {
-        Row: {
-          ativo: boolean | null
-          conteudo_texto: string | null
-          created_at: string | null
-          descricao: string | null
-          duracao_minutos: number | null
-          id: string
-          modulo_id: string | null
-          ordem: number | null
-          pdf_url: string | null
-          tipo: string
-          titulo: string
-          video_thumbnail: string | null
-          video_url: string | null
-        }
-        Insert: {
-          ativo?: boolean | null
-          conteudo_texto?: string | null
-          created_at?: string | null
-          descricao?: string | null
-          duracao_minutos?: number | null
-          id?: string
-          modulo_id?: string | null
-          ordem?: number | null
-          pdf_url?: string | null
-          tipo: string
-          titulo: string
-          video_thumbnail?: string | null
-          video_url?: string | null
-        }
-        Update: {
-          ativo?: boolean | null
-          conteudo_texto?: string | null
-          created_at?: string | null
-          descricao?: string | null
-          duracao_minutos?: number | null
-          id?: string
-          modulo_id?: string | null
-          ordem?: number | null
-          pdf_url?: string | null
-          tipo?: string
-          titulo?: string
-          video_thumbnail?: string | null
-          video_url?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "conteudos_modulo_id_fkey"
-            columns: ["modulo_id"]
-            isOneToOne: false
-            referencedRelation: "modulos"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      materias: {
-        Row: {
-          ativo: boolean | null
-          cor: string | null
-          created_at: string | null
-          descricao: string | null
-          icone: string | null
-          id: string
-          nome: string
-          ordem: number | null
-        }
-        Insert: {
-          ativo?: boolean | null
-          cor?: string | null
-          created_at?: string | null
-          descricao?: string | null
-          icone?: string | null
-          id?: string
-          nome: string
-          ordem?: number | null
-        }
-        Update: {
-          ativo?: boolean | null
-          cor?: string | null
-          created_at?: string | null
-          descricao?: string | null
-          icone?: string | null
-          id?: string
-          nome?: string
-          ordem?: number | null
         }
         Relationships: []
       }
@@ -259,51 +170,11 @@ export type Database = {
         }
         Relationships: []
       }
-      modulos: {
-        Row: {
-          ativo: boolean | null
-          created_at: string | null
-          descricao: string | null
-          id: string
-          materia_id: string | null
-          ordem: number | null
-          titulo: string
-        }
-        Insert: {
-          ativo?: boolean | null
-          created_at?: string | null
-          descricao?: string | null
-          id?: string
-          materia_id?: string | null
-          ordem?: number | null
-          titulo: string
-        }
-        Update: {
-          ativo?: boolean | null
-          created_at?: string | null
-          descricao?: string | null
-          id?: string
-          materia_id?: string | null
-          ordem?: number | null
-          titulo?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "modulos_materia_id_fkey"
-            columns: ["materia_id"]
-            isOneToOne: false
-            referencedRelation: "materias"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           created_at: string
           id: string
           name: string | null
-          plano: string
-          plano_ativo_ate: string | null
           track_id: string | null
           updated_at: string
           user_id: string
@@ -312,8 +183,6 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string | null
-          plano?: string
-          plano_ativo_ate?: string | null
           track_id?: string | null
           updated_at?: string
           user_id: string
@@ -322,8 +191,6 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string | null
-          plano?: string
-          plano_ativo_ate?: string | null
           track_id?: string | null
           updated_at?: string
           user_id?: string
@@ -334,53 +201,6 @@ export type Database = {
             columns: ["track_id"]
             isOneToOne: false
             referencedRelation: "tracks"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      progresso_estudo: {
-        Row: {
-          anotacoes: string | null
-          concluido: boolean | null
-          conteudo_id: string | null
-          created_at: string | null
-          data_conclusao: string | null
-          data_inicio: string | null
-          id: string
-          tempo_assistido: number | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          anotacoes?: string | null
-          concluido?: boolean | null
-          conteudo_id?: string | null
-          created_at?: string | null
-          data_conclusao?: string | null
-          data_inicio?: string | null
-          id?: string
-          tempo_assistido?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          anotacoes?: string | null
-          concluido?: boolean | null
-          conteudo_id?: string | null
-          created_at?: string | null
-          data_conclusao?: string | null
-          data_inicio?: string | null
-          id?: string
-          tempo_assistido?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "progresso_estudo_conteudo_id_fkey"
-            columns: ["conteudo_id"]
-            isOneToOne: false
-            referencedRelation: "conteudos"
             referencedColumns: ["id"]
           },
         ]
