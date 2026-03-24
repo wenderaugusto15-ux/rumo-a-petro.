@@ -1,0 +1,27 @@
+{
+  "redirects": [
+    {
+      "source": "/auth",
+      "has": [
+        {
+          "type": "query",
+          "key": "signup",
+          "value": "true"
+        }
+      ],
+      "destination": "/cadastro",
+      "permanent": true
+    },
+    {
+      "source": "/auth",
+      "destination": "/login",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
