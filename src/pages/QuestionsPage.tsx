@@ -540,6 +540,7 @@ export default function QuestionsPage() {
           </AnimatePresence>
         )}
       </div>
+    </ProContentOverlay>
     </AppLayout>
   );
 }

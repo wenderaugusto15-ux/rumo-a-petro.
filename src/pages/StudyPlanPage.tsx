@@ -432,6 +432,7 @@ export default function StudyPlanPage() {
           </>
         )}
       </div>
+    </ProContentOverlay>
     </AppLayout>
   );
 }

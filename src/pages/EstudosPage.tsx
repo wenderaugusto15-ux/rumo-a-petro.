@@ -97,6 +97,7 @@ export default function EstudosPage() {
           </div>
         )}
       </div>
+    </ProContentOverlay>
     </AppLayout>
   );
 }
