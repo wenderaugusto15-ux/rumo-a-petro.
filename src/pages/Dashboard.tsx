@@ -66,6 +66,8 @@ export default function Dashboard() {
     weakestSubject, weakestAccuracy,
   } = data;
 
+  const isNewUser = totalQuestionsAnswered === 0 && weekSessions.done === 0;
+
   const todayProgress = todayMinutes.planned > 0 ? Math.round((todayMinutes.done / todayMinutes.planned) * 100) : 0;
   const weekProgress = weekSessions.total > 0 ? Math.round((weekSessions.done / weekSessions.total) * 100) : 0;
 
@@ -119,7 +121,26 @@ export default function Dashboard() {
           </motion.div>
         </motion.div>
 
-        {/* Cards Grid */}
+        {isNewUser ? (
+          <motion.div variants={fadeUp} custom={3} className="bg-card rounded-xl p-8 shadow-card border border-border text-center">
+            <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-bold text-foreground mb-2">Comece sua jornada!</h3>
+            <p className="text-muted-foreground mb-6">Faça seu primeiro simulado ou resolva questões para ver suas estatísticas aqui.</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link to="/app/simulados">
+                <Button className="bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 gap-2">
+                  <Clock className="h-4 w-4" /> Fazer Simulado
+                </Button>
+              </Link>
+              <Link to="/app/questoes">
+                <Button variant="outline" className="gap-2">
+                  <BookOpen className="h-4 w-4" /> Resolver Questões
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        ) : (
+          <>
         <motion.div initial="hidden" animate="visible" className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-8">
           {/* Study Plan Card */}
           <motion.div variants={fadeUp} custom={3} className="bg-card rounded-xl p-5 shadow-card border border-border hover:shadow-card-hover transition-shadow">
@@ -300,6 +321,8 @@ export default function Dashboard() {
             </div>
           </motion.div>
         </motion.div>
+          </>
+        )}
       </div>
     </AppLayout>
   );
