@@ -14,6 +14,7 @@ const sidebarItems = [
   { icon: Clock, label: "Simulados", path: "/app/simulados" },
   { icon: TrendingUp, label: "Desempenho", path: "/app/desempenho" },
   { icon: Award, label: "Plano de Estudo", path: "/app/plano" },
+  { icon: GraduationCap, label: "Estudos", path: "/app/estudos" },
   { icon: CreditCard, label: "Upgrade PRO", path: "/app/upgrade" },
 ];
 
