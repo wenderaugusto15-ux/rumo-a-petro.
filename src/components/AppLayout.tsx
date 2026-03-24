@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Clock, TrendingUp, User,
-  Zap, LogOut, Award, CreditCard, Settings, Shield
+  Zap, LogOut, Award, CreditCard, Settings, Shield, GraduationCap
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
@@ -14,6 +14,7 @@ const sidebarItems = [
   { icon: Clock, label: "Simulados", path: "/app/simulados" },
   { icon: TrendingUp, label: "Desempenho", path: "/app/desempenho" },
   { icon: Award, label: "Plano de Estudo", path: "/app/plano" },
+  { icon: GraduationCap, label: "Estudos", path: "/app/estudos" },
   { icon: CreditCard, label: "Upgrade PRO", path: "/app/upgrade" },
 ];
 
