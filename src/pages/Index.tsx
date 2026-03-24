@@ -283,10 +283,10 @@ export default function Index() {
               Estabilidade, salário acima da média e propósito. A aprovação na Petrobras é o primeiro passo para a carreira dos seus sonhos.
             </motion.p>
             <motion.div variants={fadeUp} custom={2}>
-              <Link to={ctaPath}>
-                <Button size="lg" className="bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6">
-                  {user ? "Acessar Plataforma" : "Começar agora — é gratuito"}
-                  <ChevronRight className="ml-2 h-5 w-5" />
+              <Link to="/cadastro">
+                <Button size="lg" className="bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 transition-all text-lg sm:text-xl font-extrabold px-8 sm:px-10 py-6 sm:py-7 animate-pulse-glow uppercase tracking-wide">
+                  COMEÇAR AGORA
+                  <ChevronRight className="ml-2 h-6 w-6" />
                 </Button>
               </Link>
             </motion.div>
