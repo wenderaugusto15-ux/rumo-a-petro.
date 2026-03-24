@@ -321,6 +321,8 @@ export default function Dashboard() {
             </div>
           </motion.div>
         </motion.div>
+          </>
+        )}
       </div>
     </AppLayout>
   );
