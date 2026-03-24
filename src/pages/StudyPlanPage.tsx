@@ -19,6 +19,7 @@ import {
   isToday,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import ProContentOverlay from "@/components/ProContentOverlay";
 
 type SessionStatus = "done" | "planned" | "skipped";
 
