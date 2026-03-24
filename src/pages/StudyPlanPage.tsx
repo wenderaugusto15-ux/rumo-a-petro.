@@ -19,6 +19,7 @@ import {
   isToday,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import ProContentOverlay from "@/components/ProContentOverlay";
 
 type SessionStatus = "done" | "planned" | "skipped";
 
@@ -245,6 +246,7 @@ export default function StudyPlanPage() {
 
   return (
     <AppLayout>
+    <ProContentOverlay featureName="Plano de Estudo">
       <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -431,6 +433,7 @@ export default function StudyPlanPage() {
           </>
         )}
       </div>
+    </ProContentOverlay>
     </AppLayout>
   );
 }

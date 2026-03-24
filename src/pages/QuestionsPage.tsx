@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
+import ProContentOverlay from "@/components/ProContentOverlay";
 
 type Question = Tables<"questions">;
 
@@ -287,6 +288,7 @@ export default function QuestionsPage() {
 
   return (
     <AppLayout>
+    <ProContentOverlay featureName="Questões">
       <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -539,6 +541,7 @@ export default function QuestionsPage() {
           </AnimatePresence>
         )}
       </div>
+    </ProContentOverlay>
     </AppLayout>
   );
 }

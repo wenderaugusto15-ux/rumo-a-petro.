@@ -3,6 +3,7 @@ import { BookOpen, ChevronRight, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import AppLayout from "@/components/AppLayout";
 import { useMateriasComProgresso } from "@/hooks/useEstudos";
+import ProContentOverlay from "@/components/ProContentOverlay";
 
 const iconMap: Record<string, string> = {
   calculator: "🧮",
@@ -22,6 +23,7 @@ export default function EstudosPage() {
 
   return (
     <AppLayout>
+    <ProContentOverlay featureName="Estudos">
       <div className="p-6 sm:p-8 max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-extrabold text-foreground">Estudos</h1>
@@ -96,6 +98,7 @@ export default function EstudosPage() {
           </div>
         )}
       </div>
+    </ProContentOverlay>
     </AppLayout>
   );
 }
