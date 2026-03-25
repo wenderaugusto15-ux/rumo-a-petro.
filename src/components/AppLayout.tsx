@@ -37,6 +37,7 @@ const bottomNavItems: SidebarItem[] = [
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
+  const { isTrialExpired } = useAssinatura();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
