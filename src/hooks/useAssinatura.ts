@@ -18,7 +18,8 @@ export function useAssinatura() {
         .maybeSingle();
 
       if (error) throw error;
-      return data;
+      // Cast to include trial columns added via migration
+      return data as (typeof data & { trial_started_at?: string; trial_ends_at?: string }) | null;
     },
     enabled: !!user,
   });
