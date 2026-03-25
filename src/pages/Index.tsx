@@ -179,7 +179,7 @@ export default function Index() {
               </Link>
             </motion.div>
             <motion.div variants={fadeUp} custom={4} className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 text-white/60 text-sm">
-              <span className="flex items-center gap-1"><CheckCircle className="h-4 w-4 text-success" /> Faça já seu simulado</span>
+              <span className="flex items-center gap-1"><CheckCircle className="h-4 w-4 text-success" /> Comece grátis. Sem Cartão.</span>
               <span className="flex items-center gap-1"><CheckCircle className="h-4 w-4 text-success" /> Sem cartão de crédito</span>
             </motion.div>
           </motion.div>
