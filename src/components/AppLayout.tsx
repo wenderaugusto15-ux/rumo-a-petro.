@@ -107,7 +107,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 pb-20 lg:pb-0">
+        <TrialBanner />
         {children}
+        {isTrialExpired && location.pathname !== "/app/upgrade" && <TrialExpiredOverlay />}
       </main>
 
       {/* Mobile Bottom Navigation */}
