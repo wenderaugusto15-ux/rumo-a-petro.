@@ -695,6 +695,8 @@ export type Database = {
           plan: Database["public"]["Enums"]["subscription_plan"]
           started_at: string
           status: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at: string | null
+          trial_started_at: string | null
           user_id: string
         }
         Insert: {
@@ -702,6 +704,8 @@ export type Database = {
           plan?: Database["public"]["Enums"]["subscription_plan"]
           started_at?: string
           status?: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
           user_id: string
         }
         Update: {
@@ -709,6 +713,8 @@ export type Database = {
           plan?: Database["public"]["Enums"]["subscription_plan"]
           started_at?: string
           status?: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
           user_id?: string
         }
         Relationships: []

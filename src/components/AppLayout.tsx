@@ -7,6 +7,9 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAssinatura } from "@/hooks/useAssinatura";
+import TrialExpiredOverlay from "@/components/TrialExpiredOverlay";
+import TrialBanner from "@/components/TrialBanner";
 
 interface SidebarItem {
   icon: typeof LayoutDashboard;
@@ -34,6 +37,7 @@ const bottomNavItems: SidebarItem[] = [
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
+  const { isTrialExpired } = useAssinatura();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -103,7 +107,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 pb-20 lg:pb-0">
+        <TrialBanner />
         {children}
+        {isTrialExpired && location.pathname !== "/app/upgrade" && <TrialExpiredOverlay />}
       </main>
 
       {/* Mobile Bottom Navigation */}
