@@ -1,42 +1,106 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Clock, BookOpen, Zap, ChevronRight, Trophy, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import AppLayout from "@/components/AppLayout";
-
-const mockExamTypes = [
-  {
-    title: "Simulado Rápido",
-    desc: "20 questões selecionadas para treino ágil",
-    duration: "~30 min",
-    icon: Zap,
-    locked: false,
-    subjects: ["Português", "Matemática", "Inglês"],
-  },
-  {
-    title: "Simulado Completo",
-    desc: "Simulação fiel ao estilo Cesgranrio",
-    duration: "~4 horas",
-    icon: BookOpen,
-    locked: false,
-    subjects: ["Todas as matérias da trilha"],
-  },
-  {
-    title: "Simulado por Matéria",
-    desc: "Foque em uma disciplina específica",
-    duration: "~45 min",
-    icon: Trophy,
-    locked: true,
-    subjects: ["Escolha a matéria"],
-  },
-];
-
-const recentResults = [
-  { date: "20/02/2026", type: "Rápido", score: 75, questions: 20 },
-  { date: "18/02/2026", type: "Completo", score: 68, questions: 60 },
-  { date: "15/02/2026", type: "Rápido", score: 80, questions: 20 },
-];
+import { useNavigate } from "react-router-dom";
+import { useAssinatura } from "@/hooks/useAssinatura";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function MockExamsPage() {
+  const navigate = useNavigate();
+  const { isAssinante } = useAssinatura();
+  const { user } = useAuth();
+  const [subjectDialog, setSubjectDialog] = useState(false);
+
+  const { data: subjects } = useQuery({
+    queryKey: ["subjects-for-mock"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("subjects")
+        .select("id, name")
+        .eq("active", true)
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: recentExams } = useQuery({
+    queryKey: ["recent-mock-exams", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("mock_exams")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const handleStartQuick = () => {
+    navigate("/app/simulados/rapido");
+  };
+
+  const handleStartFull = () => {
+    navigate("/app/simulados/completo");
+  };
+
+  const handleSubjectExam = () => {
+    if (!isAssinante) {
+      navigate("/app/upgrade");
+      return;
+    }
+    setSubjectDialog(true);
+  };
+
+  const handleSelectSubject = (subjectId: string) => {
+    setSubjectDialog(false);
+    navigate(`/app/simulados/materia/${subjectId}`);
+  };
+
+  const mockExamTypes = [
+    {
+      title: "Simulado Rápido",
+      desc: "20 questões selecionadas para treino ágil",
+      duration: "~30 min",
+      icon: Zap,
+      locked: false,
+      subjects: ["Português", "Matemática", "Inglês"],
+      onClick: handleStartQuick,
+    },
+    {
+      title: "Simulado Completo",
+      desc: "Simulação fiel ao estilo Cesgranrio",
+      duration: "~4 horas",
+      icon: BookOpen,
+      locked: false,
+      subjects: ["Todas as matérias da trilha"],
+      onClick: handleStartFull,
+    },
+    {
+      title: "Simulado por Matéria",
+      desc: "Foque em uma disciplina específica",
+      duration: "~45 min",
+      icon: Trophy,
+      locked: !isAssinante,
+      subjects: ["Escolha a matéria"],
+      onClick: handleSubjectExam,
+    },
+  ];
+
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
@@ -77,8 +141,8 @@ export default function MockExamsPage() {
                 ))}
               </div>
               <Button
-                className={exam.locked ? "w-full bg-muted text-muted-foreground" : "w-full bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90"}
-                disabled={exam.locked}
+                onClick={exam.onClick}
+                className={exam.locked ? "w-full bg-muted text-muted-foreground hover:bg-muted/80" : "w-full bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90"}
               >
                 {exam.locked ? "Desbloquear" : "Iniciar"} <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
@@ -86,26 +150,58 @@ export default function MockExamsPage() {
           ))}
         </div>
 
-        {/* Recent results */}
+        {/* Recent results from DB */}
         <div className="bg-card rounded-xl shadow-card border border-border overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-border">
             <h2 className="font-bold text-foreground">Resultados Recentes</h2>
           </div>
           <div className="divide-y divide-border">
-            {recentResults.map((r, i) => (
-              <div key={i} className="p-4 sm:px-5 flex items-center justify-between">
-                <div>
-                  <div className="font-semibold text-sm text-foreground">Simulado {r.type}</div>
-                  <div className="text-xs text-muted-foreground">{r.date} · {r.questions} questões</div>
-                </div>
-                <div className={`text-lg font-extrabold ${r.score >= 70 ? "text-success" : "text-accent"}`}>
-                  {r.score}%
-                </div>
+            {(!recentExams || recentExams.length === 0) ? (
+              <div className="p-6 text-center text-sm text-muted-foreground">
+                Nenhum simulado realizado ainda. Comece agora!
               </div>
-            ))}
+            ) : (
+              recentExams.map((exam) => (
+                <div key={exam.id} className="p-4 sm:px-5 flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold text-sm text-foreground">
+                      Simulado {exam.type === "quick" ? "Rápido" : "Completo"}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {format(new Date(exam.created_at), "dd/MM/yyyy", { locale: ptBR })} · {exam.total_questions} questões
+                    </div>
+                  </div>
+                  <div className={`text-lg font-extrabold ${(exam.score_percent ?? 0) >= 70 ? "text-green-500" : "text-accent"}`}>
+                    {exam.score_percent != null ? `${Math.round(exam.score_percent)}%` : "—"}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
+
+      {/* Subject selection dialog */}
+      <Dialog open={subjectDialog} onOpenChange={setSubjectDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Escolha a Matéria</DialogTitle>
+            <DialogDescription>Selecione a disciplina para o simulado</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2 max-h-80 overflow-y-auto">
+            {subjects?.map((s) => (
+              <Button
+                key={s.id}
+                variant="outline"
+                className="justify-start text-left"
+                onClick={() => handleSelectSubject(s.id)}
+              >
+                {s.name}
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

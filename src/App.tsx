@@ -83,7 +83,8 @@ const App = () => {
                   <Route path="/app" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                   <Route path="/app/questoes" element={<ProtectedRoute><ProRoute><QuestionsPage /></ProRoute></ProtectedRoute>} />
                   <Route path="/app/simulados" element={<ProtectedRoute><MockExamsPage /></ProtectedRoute>} />
-                  <Route path="/app/simulado/:examId" element={<ProtectedRoute><MockExamTakingPage /></ProtectedRoute>} />
+                  <Route path="/app/simulados/materia/:subjectId" element={<ProtectedRoute><MockExamTakingPage /></ProtectedRoute>} />
+                  <Route path="/app/simulados/:type" element={<ProtectedRoute><MockExamTakingPage /></ProtectedRoute>} />
                   <Route path="/app/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
                   <Route path="/app/plano" element={<ProtectedRoute><ProRoute><StudyPlanPage /></ProRoute></ProtectedRoute>} />
                   <Route path="/app/upgrade" element={<ProtectedRoute><UpgradePage /></ProtectedRoute>} />
