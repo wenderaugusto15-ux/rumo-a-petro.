@@ -23,9 +23,28 @@ export function useAssinatura() {
     enabled: !!user,
   });
 
+  const now = new Date();
+  const trialEndsAt = data?.trial_ends_at ? new Date(data.trial_ends_at) : null;
+  const isTrialActive = trialEndsAt ? now < trialEndsAt : false;
+  const isPro = !!data && data.plan === "pro";
+  const isTrialExpired = !!data && !isPro && trialEndsAt ? now >= trialEndsAt : false;
+
+  // User has access if PRO or trial is still active
+  const temAcesso = isPro || isTrialActive;
+
+  // Calculate remaining trial days
+  const trialDaysLeft = trialEndsAt && isTrialActive
+    ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
+    : 0;
+
   return {
     assinatura: data,
-    isAssinante: !!data && data.plan === "pro",
+    isAssinante: isPro,
+    temAcesso,
+    isTrialActive,
+    isTrialExpired,
+    trialDaysLeft,
+    trialEndsAt,
     isLoading,
   };
 }
