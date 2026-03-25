@@ -74,76 +74,65 @@ export default function UpgradePage() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {plans.map((plan, i) => (
-            <motion.div
-              key={plan.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.15 }}
-              className={`rounded-2xl p-6 border ${
-                plan.current
-                  ? "bg-card border-border shadow-card"
-                  : plan.popular
+        <div className="flex justify-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
+            {plans.map((plan, i) => (
+              <motion.div
+                key={plan.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.15 }}
+                className={`rounded-2xl p-6 border ${
+                  plan.popular
                     ? "bg-card border-accent shadow-card-hover ring-2 ring-accent/30 relative"
                     : "bg-card border-border shadow-card-hover relative"
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-3 left-4 bg-gradient-cta text-accent-foreground text-xs font-bold px-3 py-1 rounded-full">
-                  Melhor custo-benefício
-                </div>
-              )}
-              {plan.savings && (
-                <div className="absolute -top-3 right-4 bg-success text-white text-xs font-bold px-3 py-1 rounded-full">
-                  {plan.savings}
-                </div>
-              )}
-              <div className="text-center mb-6">
-                <h3 className="text-lg font-bold text-foreground mb-1">{plan.name}</h3>
-                {plan.originalPrice && (
-                  <div className="text-base font-semibold text-destructive line-through mb-1">
-                    De {plan.originalPrice}
+                }`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-3 left-4 bg-gradient-cta text-accent-foreground text-xs font-bold px-3 py-1 rounded-full">
+                    Melhor custo-benefício
                   </div>
                 )}
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className={`text-3xl font-black uppercase ${plan.originalPrice ? "text-success" : "text-foreground"}`}>
-                    {plan.originalPrice ? `POR ${plan.price}` : plan.price}
-                  </span>
-                  <span className="text-sm text-muted-foreground">{plan.period}</span>
+                {plan.savings && (
+                  <div className="absolute -top-3 right-4 bg-success text-white text-xs font-bold px-3 py-1 rounded-full">
+                    {plan.savings}
+                  </div>
+                )}
+                <div className="text-center mb-6">
+                  <h3 className="text-lg font-bold text-foreground mb-1">{plan.name}</h3>
+                  {plan.originalPrice && (
+                    <div className="text-base font-semibold text-destructive line-through mb-1">
+                      De {plan.originalPrice}
+                    </div>
+                  )}
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-3xl font-black uppercase text-success">
+                      POR {plan.price}
+                    </span>
+                    <span className="text-sm text-muted-foreground">{plan.period}</span>
+                  </div>
                 </div>
-              </div>
-              <ul className="space-y-3 mb-6">
-                {plan.features.map((f) => (
-                  <li key={f.text} className="flex items-center gap-2 text-sm">
-                    {f.included ? (
+                <ul className="space-y-3 mb-6">
+                  {plan.features.map((f) => (
+                    <li key={f.text} className="flex items-center gap-2 text-sm">
                       <Check className="h-4 w-4 text-success shrink-0" />
-                    ) : (
-                      <X className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-                    )}
-                    <span className={f.included ? "text-foreground" : "text-muted-foreground/50"}>{f.text}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                className={`w-full text-sm leading-tight py-3 h-auto whitespace-normal ${
-                  plan.current
-                    ? "bg-muted text-muted-foreground cursor-default"
-                    : "bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 animate-pulse-glow"
-                }`}
-                disabled={plan.current}
-                onClick={() => {
-                  if (!plan.current && plan.checkoutUrl) {
+                      <span className="text-foreground">{f.text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  className="w-full text-sm leading-tight py-3 h-auto whitespace-normal bg-gradient-cta text-accent-foreground shadow-cta hover:opacity-90 animate-pulse-glow"
+                  onClick={() => {
                     const planType = plan.name.includes("Semestral") ? "semestral" : "mensal";
                     window.open(getCheckoutUrl(plan.checkoutUrl, planType), "_blank");
-                  }
-                }}
-              >
-                {plan.cta}
-                {!plan.current && <ChevronRight className="ml-1 h-4 w-4 shrink-0" />}
-              </Button>
-            </motion.div>
-          ))}
+                  }}
+                >
+                  {plan.cta}
+                  <ChevronRight className="ml-1 h-4 w-4 shrink-0" />
+                </Button>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         <div className="mt-8 text-center">
