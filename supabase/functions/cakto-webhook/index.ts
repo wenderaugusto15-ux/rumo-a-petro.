@@ -1,4 +1,4 @@
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.97.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,128 +14,134 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const webhookSecret = Deno.env.get("CAKTO_WEBHOOK_SECRET");
 
     const body = await req.text();
-    console.log("Cakto webhook received:", body);
-
-    // Optional signature verification if Cakto provides a secret
-    if (webhookSecret) {
-      const signature = req.headers.get("x-cakto-signature") || req.headers.get("x-webhook-signature");
-      if (signature) {
-        const { createHmac } = await import("node:crypto");
-        const expected = createHmac("sha256", webhookSecret).update(body).digest("hex");
-        if (signature !== expected) {
-          console.error("Invalid webhook signature");
-          return new Response(JSON.stringify({ error: "Invalid signature" }), {
-            status: 401,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-      }
-    }
+    console.log("=== CAKTO WEBHOOK RECEBIDO ===");
+    console.log("Body:", body);
 
     const event = JSON.parse(body);
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Determine event type
-    const eventType = event.type || event.event || "";
+    console.log("Evento completo:", JSON.stringify(event, null, 2));
+
+    const eventType = event.type || event.event || event.evento || "";
     const status = event.status || event.payment_status || event.transaction_status || "";
 
-    // Extract user_id from multiple possible fields
-    const userId =
-      event.metadata?.user_id ||
-      event.custom?.user_id ||
-      event.client_ref ||
-      event.external_reference ||
-      event.customer?.metadata?.user_id;
+    const email = (
+      event.customer?.email ||
+      event.email ||
+      event.buyer?.email ||
+      event.client?.email ||
+      event.data?.customer?.email ||
+      event.data?.email ||
+      event.subscriber?.email ||
+      ""
+    ).toLowerCase().trim();
 
-    console.log("Parsed webhook data:", { eventType, status, userId });
+    console.log("Dados extraídos:", { eventType, status, email });
 
-    if (!userId) {
-      console.error("No user_id found in webhook payload");
-      return new Response(JSON.stringify({ error: "Missing user_id" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!email) {
+      console.error("Email não encontrado no payload");
+      return new Response(
+        JSON.stringify({ received: true, error: "Email não encontrado" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // --- REFUND ---
+    console.log("Buscando usuário pelo email:", email);
+
+    const { data: userData, error: userError } = await supabase.auth.admin.listUsers();
+
+    if (userError) {
+      console.error("Erro ao buscar usuários:", userError);
+      return new Response(
+        JSON.stringify({ received: true, error: "Erro ao buscar usuário" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const user = userData.users.find(
+      (u: any) => u.email?.toLowerCase() === email
+    );
+
+    if (!user) {
+      console.log("Usuário não cadastrado ainda:", email);
+      return new Response(
+        JSON.stringify({ 
+          received: true, 
+          action: "user_not_found",
+          email: email,
+          message: "Usuário precisa se cadastrar primeiro"
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = user.id;
+    console.log("Usuário encontrado:", userId);
+
     const isRefund =
-      eventType === "refund" ||
-      eventType === "sale_refunded" ||
-      eventType === "payment.refunded" ||
+      eventType.includes("refund") ||
+      eventType.includes("reembolso") ||
       status === "refunded" ||
       status === "refund";
 
     if (isRefund) {
-      const { error } = await supabase
+      await supabase
         .from("subscriptions")
-        .update({ plan: "free", status: "canceled", ends_at: new Date().toISOString() })
+        .update({ 
+          plan: "free", 
+          status: "canceled", 
+          ends_at: new Date().toISOString() 
+        })
         .eq("user_id", userId);
 
-      if (error) {
-        console.error("Failed to process refund:", error);
-        return new Response(JSON.stringify({ error: "Refund update failed" }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      console.log(`Refund processed for user ${userId}`);
+      console.log("Reembolso processado:", userId);
       return new Response(
         JSON.stringify({ received: true, action: "refunded", user_id: userId }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // --- CANCELLATION ---
     const isCanceled =
-      eventType === "cancellation" ||
-      eventType === "sale_canceled" ||
-      eventType === "subscription.canceled" ||
-      eventType === "payment.canceled" ||
+      eventType.includes("cancel") ||
+      eventType.includes("cancelada") ||
       status === "canceled" ||
       status === "cancelled";
 
     if (isCanceled) {
-      const { error } = await supabase
+      await supabase
         .from("subscriptions")
         .update({ status: "canceled" })
         .eq("user_id", userId);
 
-      if (error) {
-        console.error("Failed to process cancellation:", error);
-        return new Response(JSON.stringify({ error: "Cancellation update failed" }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      console.log(`Cancellation processed for user ${userId}`);
+      console.log("Cancelamento processado:", userId);
       return new Response(
         JSON.stringify({ received: true, action: "canceled", user_id: userId }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // --- APPROVED / RENEWAL ---
     const isApproved =
       status === "approved" ||
       status === "paid" ||
       status === "completed" ||
-      eventType === "payment.succeeded" ||
-      eventType === "sale_approved" ||
-      eventType === "renewal" ||
-      eventType === "subscription.renewed";
+      status === "APPROVED" ||
+      eventType.includes("approved") ||
+      eventType.includes("aprovada") ||
+      eventType.includes("succeeded") ||
+      eventType.includes("renewal");
 
     if (!isApproved) {
-      console.log("Event not actionable, skipping:", eventType, status);
-      return new Response(JSON.stringify({ received: true, action: "skipped" }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.log("Evento ignorado:", eventType, status);
+      return new Response(
+        JSON.stringify({ received: true, action: "skipped" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const planType = event.metadata?.plan_type || event.custom?.plan_type || "pro";
-    const isSemestral = planType === "semestral";
+    const productName = (event.product?.name || event.plan || "").toLowerCase();
+    const isSemestral = productName.includes("semestral") || productName.includes("6 meses");
 
     const now = new Date();
     const endsAt = new Date(now);
@@ -152,22 +158,30 @@ Deno.serve(async (req) => {
       .eq("user_id", userId);
 
     if (error) {
-      console.error("Failed to activate subscription:", error);
-      return new Response(JSON.stringify({ error: "Database update failed" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("Erro ao ativar:", error);
+      return new Response(
+        JSON.stringify({ error: "Falha ao ativar", details: error.message }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    console.log(`PRO activated for user ${userId} until ${endsAt.toISOString()}`);
+    console.log("PRO ATIVADO:", userId, "até", endsAt.toISOString());
     return new Response(
-      JSON.stringify({ received: true, action: "activated", user_id: userId }),
+      JSON.stringify({ 
+        received: true, 
+        action: "activated", 
+        user_id: userId,
+        plan: "pro",
+        ends_at: endsAt.toISOString()
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
   } catch (err) {
-    console.error("Webhook processing error:", err);
-    return new Response(JSON.stringify({ error: "Internal error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("ERRO:", err);
+    return new Response(
+      JSON.stringify({ error: "Internal error", message: (err as Error).message }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });
