@@ -26,6 +26,16 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error("ErrorBoundary caught:", error, errorInfo);
   }
 
+  resetError = () => {
+    this.setState({ hasError: false, error: undefined });
+  };
+
+  componentDidUpdate(prevProps: Props) {
+    if (this.state.hasError && prevProps.children !== this.props.children) {
+      this.resetError();
+    }
+  }
+
   render() {
     if (this.state.hasError) {
       return this.props.fallback ?? (
@@ -36,9 +46,14 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-muted-foreground text-sm">
               {this.state.error?.message ?? "Ocorreu um erro inesperado."}
             </p>
-            <Button onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}>
-              Recarregar página
-            </Button>
+            <div className="flex gap-3 justify-center">
+              <Button variant="outline" onClick={this.resetError}>
+                Tentar Novamente
+              </Button>
+              <Button onClick={() => window.location.reload()}>
+                Recarregar página
+              </Button>
+            </div>
           </div>
         </div>
       );
