@@ -6,6 +6,23 @@ import { useAuth } from "@/hooks/useAuth";
 
 const plans = [
   {
+    name: "Gratuito",
+    price: "R$ 0",
+    period: "para sempre",
+    cta: "Plano atual",
+    current: true,
+    features: [
+      { text: "5 questões por dia", included: true },
+      { text: "1 simulado por semana", included: true },
+      { text: "Análises básicas", included: true },
+      { text: "Plano de estudo básico", included: true },
+      { text: "Questões ilimitadas", included: false },
+      { text: "Simulados ilimitados", included: false },
+      { text: "Análises avançadas", included: false },
+      { text: "Ranking completo", included: false },
+    ],
+  },
+  {
     name: "PRO Mensal",
     originalPrice: "R$ 97,00",
     price: "R$ 47,00",
@@ -59,7 +76,7 @@ export default function UpgradePage() {
 
   return (
     <AppLayout>
-      <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -77,7 +94,7 @@ export default function UpgradePage() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
