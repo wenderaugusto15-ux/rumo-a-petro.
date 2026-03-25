@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Layers, Route, MessageSquare,
-  Calendar, CreditCard, ArrowLeft, Zap, Shield
+  Calendar, CreditCard, ArrowLeft, Zap, Shield, Users
 } from "lucide-react";
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { icon: Layers, label: "Matérias & Assuntos", path: "/admin/materias" },
   { icon: Route, label: "Trilhas", path: "/admin/trilhas" },
   { icon: MessageSquare, label: "Depoimentos", path: "/admin/depoimentos" },
+  { icon: Users, label: "Usuários", path: "/admin/usuarios" },
   { icon: Calendar, label: "Config Global", path: "/admin/config" },
   { icon: CreditCard, label: "Planos & Limites", path: "/admin/planos" },
 ];
