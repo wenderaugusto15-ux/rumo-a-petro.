@@ -7,6 +7,9 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAssinatura } from "@/hooks/useAssinatura";
+import TrialExpiredOverlay from "@/components/TrialExpiredOverlay";
+import TrialBanner from "@/components/TrialBanner";
 
 interface SidebarItem {
   icon: typeof LayoutDashboard;
