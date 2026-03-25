@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, X, Zap, Crown, Shield, ChevronRight } from "lucide-react";
+import { Check, Zap, Crown, Shield, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
