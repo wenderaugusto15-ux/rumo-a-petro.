@@ -14,7 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 import ProContentOverlay from "@/components/ProContentOverlay";
 
-type Question = Tables<"questions">;
+type Question = Omit<Tables<"questions">, "correct_option" | "explanation">;
 
 interface Subject { id: string; name: string; is_general: boolean; }
 interface Topic { id: string; name: string; subject_id: string; }
@@ -47,6 +47,7 @@ export default function QuestionsPage() {
   const [answered, setAnswered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [answerResult, setAnswerResult] = useState<{ is_correct: boolean; correct_option: string; explanation: string } | null>(null);
   const startTime = useRef(Date.now());
 
   // Daily counter
@@ -102,7 +103,7 @@ export default function QuestionsPage() {
     setLoading(true);
     let query = supabase
       .from("questions")
-      .select("*")
+      .select("id, statement, option_a, option_b, option_c, option_d, option_e, subject_id, topic_id, level, tags, active, created_at")
       .eq("active", true)
       .limit(50);
 
@@ -151,6 +152,7 @@ export default function QuestionsPage() {
   const resetAnswer = () => {
     setSelected(null);
     setAnswered(false);
+    setAnswerResult(null);
     setIsFavorite(false);
     startTime.current = Date.now();
   };
@@ -163,9 +165,20 @@ export default function QuestionsPage() {
     setSaving(true);
 
     const timeSpent = Math.round((Date.now() - startTime.current) / 1000);
-    const isCorrect = selected === currentQuestion.correct_option;
 
     try {
+      // Check answer via secure RPC
+      const { data: result, error: rpcError } = await supabase.rpc("check_answer", {
+        _question_id: currentQuestion.id,
+        _chosen_option: selected,
+      });
+
+      if (rpcError || !result) throw rpcError;
+
+      const checkResult = result as unknown as { is_correct: boolean; correct_option: string; explanation: string };
+      setAnswerResult(checkResult);
+      const isCorrect = checkResult.is_correct;
+
       // Record attempt
       await supabase.from("question_attempts").insert({
         user_id: user.id,
@@ -284,7 +297,7 @@ export default function QuestionsPage() {
       ]
     : [];
 
-  const isCorrect = selected === currentQuestion?.correct_option;
+  const isCorrect = answerResult?.is_correct ?? false;
 
   return (
     <AppLayout>
@@ -466,7 +479,7 @@ export default function QuestionsPage() {
                 {options.map((opt) => {
                   let optStyle = "bg-muted/50 border-border hover:bg-muted";
                   if (answered) {
-                    if (opt.letter === currentQuestion.correct_option) {
+                    if (opt.letter === answerResult?.correct_option) {
                       optStyle = "bg-success/10 border-success/50 text-foreground";
                     } else if (opt.letter === selected && !isCorrect) {
                       optStyle = "bg-destructive/10 border-destructive/50 text-foreground";
@@ -488,10 +501,10 @@ export default function QuestionsPage() {
                         {opt.letter}
                       </span>
                       <span className="text-sm sm:text-base">{opt.text}</span>
-                      {answered && opt.letter === currentQuestion.correct_option && (
+                      {answered && opt.letter === answerResult?.correct_option && (
                         <CheckCircle className="h-5 w-5 text-success ml-auto shrink-0 mt-0.5" />
                       )}
-                      {answered && opt.letter === selected && !isCorrect && opt.letter !== currentQuestion.correct_option && (
+                      {answered && opt.letter === selected && !isCorrect && opt.letter !== answerResult?.correct_option && (
                         <XCircle className="h-5 w-5 text-destructive ml-auto shrink-0 mt-0.5" />
                       )}
                     </button>
@@ -521,7 +534,7 @@ export default function QuestionsPage() {
                           <><XCircle className="h-5 w-5 text-destructive" /><span className="font-bold text-destructive">Incorreto</span></>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{currentQuestion.explanation}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{answerResult?.explanation}</p>
                     </div>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" className="flex-1" onClick={handleReviewLater}>

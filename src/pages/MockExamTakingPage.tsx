@@ -25,8 +25,6 @@ interface QuestionData {
   option_c: string;
   option_d: string;
   option_e: string;
-  correct_option: string;
-  explanation: string;
   subject_id: string;
 }
 
@@ -65,7 +63,9 @@ export default function MockExamTakingPage() {
   const { data: questions, isLoading } = useQuery({
     queryKey: ["exam-questions", examType, subjectId],
     queryFn: async () => {
-      let query = supabase.from("questions").select("*").eq("active", true);
+      let query = supabase.from("questions")
+        .select("id, statement, option_a, option_b, option_c, option_d, option_e, subject_id")
+        .eq("active", true);
 
       if (examType === "materia" && subjectId) {
         query = query.eq("subject_id", subjectId);
@@ -143,20 +143,24 @@ export default function MockExamTakingPage() {
       const { error: qErr } = await supabase.from("mock_exam_questions").insert(questionRows);
       if (qErr) throw qErr;
 
-      // Insert answers
+      // Check answers via secure RPC and insert
       let correctCount = 0;
-      const answerRows = questions
-        .filter((q) => answers[q.id])
-        .map((q) => {
-          const isCorrect = answers[q.id] === q.correct_option;
-          if (isCorrect) correctCount++;
-          return {
-            mock_exam_id: eid!,
-            question_id: q.id,
-            chosen_option: answers[q.id],
-            is_correct: isCorrect,
-          };
+      const answerRows = [];
+      for (const q of questions.filter((q) => answers[q.id])) {
+        const { data: result } = await supabase.rpc("check_answer", {
+          _question_id: q.id,
+          _chosen_option: answers[q.id],
         });
+        const checkResult = result as unknown as { is_correct: boolean; correct_option: string; explanation: string };
+        const isCorrect = checkResult?.is_correct ?? false;
+        if (isCorrect) correctCount++;
+        answerRows.push({
+          mock_exam_id: eid!,
+          question_id: q.id,
+          chosen_option: answers[q.id],
+          is_correct: isCorrect,
+        });
+      }
 
       if (answerRows.length > 0) {
         const { error: aErr } = await supabase.from("mock_exam_answers").insert(answerRows);
@@ -198,13 +202,13 @@ export default function MockExamTakingPage() {
   const totalQuestions = questions?.length ?? 0;
 
   const results = useMemo(() => {
-    if (!finished || !questions) return null;
-    let correct = 0;
-    questions.forEach((q) => {
-      if (answers[q.id] === q.correct_option) correct++;
-    });
-    return { correct, total: questions.length, pct: questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0 };
-  }, [finished, questions, answers]);
+    if (!finished || !finishMutation.data) return null;
+    return {
+      correct: finishMutation.data.correctCount,
+      total: finishMutation.data.total,
+      pct: finishMutation.data.total > 0 ? Math.round((finishMutation.data.correctCount / finishMutation.data.total) * 100) : 0,
+    };
+  }, [finished, finishMutation.data]);
 
   if (isLoading) {
     return (
