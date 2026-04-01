@@ -534,7 +534,7 @@ export default function QuestionsPage() {
                           <><XCircle className="h-5 w-5 text-destructive" /><span className="font-bold text-destructive">Incorreto</span></>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{currentQuestion.explanation}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{answerResult?.explanation}</p>
                     </div>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" className="flex-1" onClick={handleReviewLater}>
