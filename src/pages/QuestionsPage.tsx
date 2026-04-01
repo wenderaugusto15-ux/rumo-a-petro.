@@ -479,7 +479,7 @@ export default function QuestionsPage() {
                 {options.map((opt) => {
                   let optStyle = "bg-muted/50 border-border hover:bg-muted";
                   if (answered) {
-                    if (opt.letter === currentQuestion.correct_option) {
+                    if (opt.letter === answerResult?.correct_option) {
                       optStyle = "bg-success/10 border-success/50 text-foreground";
                     } else if (opt.letter === selected && !isCorrect) {
                       optStyle = "bg-destructive/10 border-destructive/50 text-foreground";
