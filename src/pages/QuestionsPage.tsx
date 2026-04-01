@@ -501,7 +501,7 @@ export default function QuestionsPage() {
                         {opt.letter}
                       </span>
                       <span className="text-sm sm:text-base">{opt.text}</span>
-                      {answered && opt.letter === currentQuestion.correct_option && (
+                      {answered && opt.letter === answerResult?.correct_option && (
                         <CheckCircle className="h-5 w-5 text-success ml-auto shrink-0 mt-0.5" />
                       )}
                       {answered && opt.letter === selected && !isCorrect && opt.letter !== currentQuestion.correct_option && (
