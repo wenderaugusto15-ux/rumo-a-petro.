@@ -63,7 +63,9 @@ export default function MockExamTakingPage() {
   const { data: questions, isLoading } = useQuery({
     queryKey: ["exam-questions", examType, subjectId],
     queryFn: async () => {
-      let query = supabase.from("questions").select("*").eq("active", true);
+      let query = supabase.from("questions")
+        .select("id, statement, option_a, option_b, option_c, option_d, option_e, subject_id")
+        .eq("active", true);
 
       if (examType === "materia" && subjectId) {
         query = query.eq("subject_id", subjectId);
