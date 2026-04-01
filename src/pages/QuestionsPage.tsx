@@ -47,6 +47,7 @@ export default function QuestionsPage() {
   const [answered, setAnswered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [answerResult, setAnswerResult] = useState<{ is_correct: boolean; correct_option: string; explanation: string } | null>(null);
   const startTime = useRef(Date.now());
 
   // Daily counter
