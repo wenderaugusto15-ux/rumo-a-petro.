@@ -152,6 +152,7 @@ export default function QuestionsPage() {
   const resetAnswer = () => {
     setSelected(null);
     setAnswered(false);
+    setAnswerResult(null);
     setIsFavorite(false);
     startTime.current = Date.now();
   };
