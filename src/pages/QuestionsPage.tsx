@@ -165,9 +165,20 @@ export default function QuestionsPage() {
     setSaving(true);
 
     const timeSpent = Math.round((Date.now() - startTime.current) / 1000);
-    const isCorrect = selected === currentQuestion.correct_option;
 
     try {
+      // Check answer via secure RPC
+      const { data: result, error: rpcError } = await supabase.rpc("check_answer", {
+        _question_id: currentQuestion.id,
+        _chosen_option: selected,
+      });
+
+      if (rpcError || !result) throw rpcError;
+
+      const checkResult = result as unknown as { is_correct: boolean; correct_option: string; explanation: string };
+      setAnswerResult(checkResult);
+      const isCorrect = checkResult.is_correct;
+
       // Record attempt
       await supabase.from("question_attempts").insert({
         user_id: user.id,
