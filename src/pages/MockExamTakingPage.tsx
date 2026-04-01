@@ -25,8 +25,6 @@ interface QuestionData {
   option_c: string;
   option_d: string;
   option_e: string;
-  correct_option: string;
-  explanation: string;
   subject_id: string;
 }
 
