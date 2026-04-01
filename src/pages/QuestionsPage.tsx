@@ -297,7 +297,7 @@ export default function QuestionsPage() {
       ]
     : [];
 
-  const isCorrect = selected === currentQuestion?.correct_option;
+  const isCorrect = answerResult?.is_correct ?? false;
 
   return (
     <AppLayout>
