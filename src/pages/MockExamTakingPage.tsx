@@ -202,13 +202,13 @@ export default function MockExamTakingPage() {
   const totalQuestions = questions?.length ?? 0;
 
   const results = useMemo(() => {
-    if (!finished || !questions) return null;
-    let correct = 0;
-    questions.forEach((q) => {
-      if (answers[q.id] === q.correct_option) correct++;
-    });
-    return { correct, total: questions.length, pct: questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0 };
-  }, [finished, questions, answers]);
+    if (!finished || !finishMutation.data) return null;
+    return {
+      correct: finishMutation.data.correctCount,
+      total: finishMutation.data.total,
+      pct: finishMutation.data.total > 0 ? Math.round((finishMutation.data.correctCount / finishMutation.data.total) * 100) : 0,
+    };
+  }, [finished, finishMutation.data]);
 
   if (isLoading) {
     return (
