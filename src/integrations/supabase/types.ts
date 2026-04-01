@@ -385,6 +385,32 @@ export type Database = {
           },
         ]
       }
+      question_answers: {
+        Row: {
+          correct_option: string
+          explanation: string
+          question_id: string
+        }
+        Insert: {
+          correct_option: string
+          explanation?: string
+          question_id: string
+        }
+        Update: {
+          correct_option?: string
+          explanation?: string
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       question_attempts: {
         Row: {
           attempted_at: string
@@ -962,6 +988,10 @@ export type Database = {
       add_xp: {
         Args: { _amount: number; _user_id: string }
         Returns: undefined
+      }
+      check_answer: {
+        Args: { _chosen_option: string; _question_id: string }
+        Returns: Json
       }
       has_role: {
         Args: {
