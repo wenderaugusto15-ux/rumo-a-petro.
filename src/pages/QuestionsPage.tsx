@@ -103,7 +103,7 @@ export default function QuestionsPage() {
     setLoading(true);
     let query = supabase
       .from("questions")
-      .select("*")
+      .select("id, statement, option_a, option_b, option_c, option_d, option_e, subject_id, topic_id, level, tags, active, created_at")
       .eq("active", true)
       .limit(50);
 
