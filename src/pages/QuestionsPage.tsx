@@ -14,7 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 import ProContentOverlay from "@/components/ProContentOverlay";
 
-type Question = Tables<"questions">;
+type Question = Omit<Tables<"questions">, "correct_option" | "explanation">;
 
 interface Subject { id: string; name: string; is_general: boolean; }
 interface Topic { id: string; name: string; subject_id: string; }
