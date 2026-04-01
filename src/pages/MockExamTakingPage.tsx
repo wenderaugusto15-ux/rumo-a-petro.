@@ -143,20 +143,24 @@ export default function MockExamTakingPage() {
       const { error: qErr } = await supabase.from("mock_exam_questions").insert(questionRows);
       if (qErr) throw qErr;
 
-      // Insert answers
+      // Check answers via secure RPC and insert
       let correctCount = 0;
-      const answerRows = questions
-        .filter((q) => answers[q.id])
-        .map((q) => {
-          const isCorrect = answers[q.id] === q.correct_option;
-          if (isCorrect) correctCount++;
-          return {
-            mock_exam_id: eid!,
-            question_id: q.id,
-            chosen_option: answers[q.id],
-            is_correct: isCorrect,
-          };
+      const answerRows = [];
+      for (const q of questions.filter((q) => answers[q.id])) {
+        const { data: result } = await supabase.rpc("check_answer", {
+          _question_id: q.id,
+          _chosen_option: answers[q.id],
         });
+        const checkResult = result as unknown as { is_correct: boolean; correct_option: string; explanation: string };
+        const isCorrect = checkResult?.is_correct ?? false;
+        if (isCorrect) correctCount++;
+        answerRows.push({
+          mock_exam_id: eid!,
+          question_id: q.id,
+          chosen_option: answers[q.id],
+          is_correct: isCorrect,
+        });
+      }
 
       if (answerRows.length > 0) {
         const { error: aErr } = await supabase.from("mock_exam_answers").insert(answerRows);
