@@ -11,8 +11,6 @@ import { AdminRoute } from "@/components/AdminRoute";
 import { ProRoute } from "@/components/ProRoute";
 import { Loader2 } from "lucide-react";
 import ChatPetra from "@/components/ChatPetra";
-import { initMetaPixel } from "@/lib/metaPixel";
-import { MetaPixelPageTracker } from "@/components/MetaPixelPageTracker";
 
 // Lazy loaded pages
 const Index = lazy(() => import("./pages/Index"));
@@ -59,9 +57,6 @@ const PageLoader = () => (
 
 
 const App = () => {
-  useEffect(() => {
-    initMetaPixel();
-  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -110,7 +105,7 @@ const App = () => {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
-              <MetaPixelPageTracker />
+              
               <ChatPetra />
             </BrowserRouter>
           </ErrorBoundary>
