@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Users, FileQuestion, TrendingUp, BookOpen, Crown, Activity,
-  Clock, BarChart3, UserCheck, AlertTriangle
+  Users, Crown, Activity, AlertTriangle, UserCheck, TrendingUp, BarChart3
 } from "lucide-react";
 import { format, subDays, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -15,56 +15,90 @@ import {
 } from "recharts";
 
 export default function AdminDashboard() {
-  // Basic stats
-  const { data: stats } = useQuery({
-    queryKey: ["admin-stats"],
+  const { user } = useAuth();
+
+  // Check if master
+  const { data: isMaster } = useQuery({
+    queryKey: ["admin-is-master", user?.id],
     queryFn: async () => {
-      const [profiles, questions, attempts, subjects, subs] = await Promise.all([
+      if (!user) return false;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "master")
+        .maybeSingle();
+      return !!data;
+    },
+    enabled: !!user,
+  });
+
+  // Enhanced stats
+  const { data: stats } = useQuery({
+    queryKey: ["admin-dashboard-stats"],
+    queryFn: async () => {
+      const [profiles, subs, weekProfiles] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("questions").select("id", { count: "exact", head: true }),
-        supabase.from("question_attempts").select("id", { count: "exact", head: true }),
-        supabase.from("subjects").select("id", { count: "exact", head: true }),
-        supabase.from("subscriptions").select("user_id, plan, status"),
+        supabase.from("subscriptions").select("user_id, plan, status, trial_ends_at, is_lifetime"),
+        supabase.from("profiles").select("id", { count: "exact", head: true })
+          .gte("created_at", subDays(new Date(), 7).toISOString()),
       ]);
 
       const subData = subs.data ?? [];
+      const now = new Date();
       const proActive = subData.filter(s => s.plan === "pro" && s.status === "active").length;
-      const freeUsers = subData.filter(s => s.plan === "free").length;
-      const canceled = subData.filter(s => s.status === "canceled").length;
+      const trialActive = subData.filter(s => {
+        if (s.plan !== "free" || s.status !== "active") return false;
+        const te = s.trial_ends_at ? new Date(s.trial_ends_at) : null;
+        return te && now < te;
+      }).length;
+      const trialExpired = subData.filter(s => {
+        if (s.plan !== "free" || s.status !== "active") return false;
+        const te = s.trial_ends_at ? new Date(s.trial_ends_at) : null;
+        return te && now >= te;
+      }).length;
+      const lifetime = subData.filter(s => s.is_lifetime).length;
 
       return {
-        users: profiles.count ?? 0,
-        questions: questions.count ?? 0,
-        attempts: attempts.count ?? 0,
-        subjects: subjects.count ?? 0,
+        totalUsers: profiles.count ?? 0,
+        newThisWeek: weekProfiles.count ?? 0,
         proActive,
-        freeUsers,
-        canceled,
+        trialActive,
+        trialExpired,
+        lifetime,
       };
     },
   });
 
-  // Recent signups (last 7 days)
-  const { data: recentSignups } = useQuery({
-    queryKey: ["admin-recent-signups"],
+  // 30-day signups for line chart
+  const { data: signupChart } = useQuery({
+    queryKey: ["admin-signup-chart"],
     queryFn: async () => {
-      const sevenDaysAgo = subDays(new Date(), 7).toISOString();
-      const { data } = await supabase
-        .from("profiles")
-        .select("created_at, name")
-        .gte("created_at", sevenDaysAgo)
-        .order("created_at", { ascending: false })
-        .limit(10);
-      return data ?? [];
+      const days: { label: string; count: number }[] = [];
+      for (let i = 29; i >= 0; i--) {
+        const day = subDays(new Date(), i);
+        const start = startOfDay(day).toISOString();
+        const end = startOfDay(subDays(new Date(), i - 1)).toISOString();
+        const { count } = await supabase
+          .from("profiles")
+          .select("id", { count: "exact", head: true })
+          .gte("created_at", start)
+          .lt("created_at", end);
+        days.push({
+          label: format(day, "dd/MM", { locale: ptBR }),
+          count: count ?? 0,
+        });
+      }
+      return days;
     },
   });
 
-  // Daily activity (last 7 days)
-  const { data: dailyActivity } = useQuery({
-    queryKey: ["admin-daily-activity"],
+  // Daily activity (14 days)
+  const { data: activityChart } = useQuery({
+    queryKey: ["admin-activity-chart"],
     queryFn: async () => {
-      const days: { date: string; label: string; attempts: number }[] = [];
-      for (let i = 6; i >= 0; i--) {
+      const days: { label: string; attempts: number }[] = [];
+      for (let i = 13; i >= 0; i--) {
         const day = subDays(new Date(), i);
         const start = startOfDay(day).toISOString();
         const end = startOfDay(subDays(new Date(), i - 1)).toISOString();
@@ -74,8 +108,7 @@ export default function AdminDashboard() {
           .gte("attempted_at", start)
           .lt("attempted_at", end);
         days.push({
-          date: day.toISOString(),
-          label: format(day, "EEE", { locale: ptBR }),
+          label: format(day, "dd/MM", { locale: ptBR }),
           attempts: count ?? 0,
         });
       }
@@ -83,112 +116,149 @@ export default function AdminDashboard() {
     },
   });
 
-  // Mock exams stats
-  const { data: mockStats } = useQuery({
-    queryKey: ["admin-mock-stats"],
+  // Recent signups
+  const { data: recentSignups } = useQuery({
+    queryKey: ["admin-recent-signups"],
     queryFn: async () => {
       const { data } = await supabase
-        .from("mock_exams")
-        .select("id, score_percent, finished_at, type")
-        .not("finished_at", "is", null)
-        .order("finished_at", { ascending: false })
-        .limit(100);
-
-      const exams = data ?? [];
-      const avgScore = exams.length > 0
-        ? Math.round(exams.reduce((acc, e) => acc + (e.score_percent ?? 0), 0) / exams.length)
-        : 0;
-      const totalFinished = exams.length;
-      const quickCount = exams.filter(e => e.type === "quick").length;
-      const fullCount = exams.filter(e => e.type === "full").length;
-
-      return { avgScore, totalFinished, quickCount, fullCount };
+        .from("profiles")
+        .select("created_at, name")
+        .gte("created_at", subDays(new Date(), 7).toISOString())
+        .order("created_at", { ascending: false })
+        .limit(10);
+      return data ?? [];
     },
   });
 
-  // Subscription pie data
+  // Pie data
   const pieData = [
-    { name: "PRO Ativo", value: stats?.proActive ?? 0, color: "hsl(var(--primary))" },
-    { name: "Free", value: stats?.freeUsers ?? 0, color: "hsl(var(--muted-foreground))" },
-    { name: "Cancelado", value: stats?.canceled ?? 0, color: "hsl(var(--destructive))" },
+    { name: "PRO", value: stats?.proActive ?? 0, color: "hsl(48, 96%, 53%)" },
+    { name: "Trial Ativo", value: stats?.trialActive ?? 0, color: "hsl(142, 76%, 36%)" },
+    { name: "Trial Expirado", value: stats?.trialExpired ?? 0, color: "hsl(25, 95%, 53%)" },
+    { name: "Lifetime", value: stats?.lifetime ?? 0, color: "hsl(262, 83%, 58%)" },
   ].filter(d => d.value > 0);
 
-  const mainCards = [
-    { title: "Usuários", value: stats?.users ?? 0, icon: Users, color: "text-blue-500" },
-    { title: "Questões", value: stats?.questions ?? 0, icon: FileQuestion, color: "text-emerald-500" },
-    { title: "Respostas", value: stats?.attempts ?? 0, icon: TrendingUp, color: "text-amber-500" },
-    { title: "PRO Ativos", value: stats?.proActive ?? 0, icon: Crown, color: "text-purple-500" },
+  const metricCards = [
+    {
+      title: "Total de Usuários",
+      value: stats?.totalUsers ?? 0,
+      subtitle: `+${stats?.newThisWeek ?? 0} esta semana`,
+      icon: Users,
+      color: "text-blue-500",
+      bg: "bg-blue-500/10",
+    },
+    {
+      title: "Usuários Ativos",
+      value: stats?.trialActive ?? 0,
+      subtitle: "Em trial ativo",
+      icon: Activity,
+      color: "text-green-500",
+      bg: "bg-green-500/10",
+    },
+    {
+      title: "Assinantes PRO",
+      value: stats?.proActive ?? 0,
+      subtitle: stats?.lifetime ? `${stats.lifetime} lifetime` : "",
+      icon: Crown,
+      color: "text-yellow-500",
+      bg: "bg-yellow-500/10",
+    },
+    {
+      title: "Trial Expirado",
+      value: stats?.trialExpired ?? 0,
+      subtitle: "Potenciais conversões",
+      icon: AlertTriangle,
+      color: "text-orange-500",
+      bg: "bg-orange-500/10",
+    },
   ];
+
+  const tooltipStyle = {
+    background: "hsl(var(--card))",
+    border: "1px solid hsl(var(--border))",
+    borderRadius: "8px",
+    color: "hsl(var(--foreground))",
+    fontSize: "12px",
+  };
 
   return (
     <AdminLayout>
       <div className="p-4 lg:p-8 space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground">Painel de Monitoramento</h1>
-            <p className="text-sm text-muted-foreground">Visão geral da plataforma em tempo real</p>
+            <h1 className="text-2xl font-extrabold text-foreground">Painel Administrativo</h1>
+            <p className="text-sm text-muted-foreground">Gerenciamento de Usuários e Métricas</p>
           </div>
-          <Badge variant="outline" className="border-green-500/50 text-green-600 gap-1">
-            <Activity className="h-3 w-3" /> Online
+          <Badge
+            variant="outline"
+            className={isMaster
+              ? "border-purple-500/50 text-purple-600 gap-1"
+              : "border-green-500/50 text-green-600 gap-1"
+            }
+          >
+            <Crown className="h-3 w-3" />
+            {isMaster ? "Master Admin" : "Admin"}
           </Badge>
         </div>
 
-        {/* Main Stats */}
+        {/* Metric Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {mainCards.map((c) => (
+          {metricCards.map((c) => (
             <Card key={c.title} className="relative overflow-hidden">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{c.title}</CardTitle>
-                <c.icon className={`h-4 w-4 ${c.color}`} />
+                <CardTitle className="text-xs font-medium text-muted-foreground">{c.title}</CardTitle>
+                <div className={`h-8 w-8 rounded-lg ${c.bg} flex items-center justify-center`}>
+                  <c.icon className={`h-4 w-4 ${c.color}`} />
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{c.value.toLocaleString("pt-BR")}</div>
+                {c.subtitle && (
+                  <p className="text-xs text-muted-foreground mt-1">{c.subtitle}</p>
+                )}
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Charts Row */}
+        {/* Charts Row 1: Signups Line + Plan Donut */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Daily Activity */}
           <Card className="lg:col-span-2">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-primary" />
-                Atividade Diária (Últimos 7 dias)
+                <TrendingUp className="h-4 w-4 text-primary" />
+                Novos Cadastros (Últimos 30 dias)
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {dailyActivity && dailyActivity.length > 0 ? (
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={dailyActivity}>
+              {signupChart && signupChart.length > 0 ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={signupChart}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="label" className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />
-                    <YAxis className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />
-                    <Tooltip
-                      contentStyle={{
-                        background: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        color: "hsl(var(--foreground))",
-                      }}
+                    <XAxis dataKey="label" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} interval={4} />
+                    <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} allowDecimals={false} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Cadastros"
                     />
-                    <Bar dataKey="attempts" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Respostas" />
-                  </BarChart>
+                  </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">
-                  Carregando...
-                </div>
+                <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">Carregando...</div>
               )}
             </CardContent>
           </Card>
 
-          {/* Subscription Pie */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Crown className="h-4 w-4 text-purple-500" />
+                <Crown className="h-4 w-4 text-yellow-500" />
                 Distribuição de Planos
               </CardTitle>
             </CardHeader>
@@ -197,30 +267,15 @@ export default function AdminDashboard() {
                 <div className="flex flex-col items-center">
                   <ResponsiveContainer width="100%" height={160}>
                     <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={65}
-                        dataKey="value"
-                        stroke="none"
-                      >
+                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} dataKey="value" stroke="none">
                         {pieData.map((entry, i) => (
                           <Cell key={i} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          background: "hsl(var(--card))",
-                          border: "1px solid hsl(var(--border))",
-                          borderRadius: "8px",
-                          color: "hsl(var(--foreground))",
-                        }}
-                      />
+                      <Tooltip contentStyle={tooltipStyle} />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="flex gap-3 text-xs mt-2">
+                  <div className="flex flex-wrap gap-3 text-xs mt-2 justify-center">
                     {pieData.map((d) => (
                       <div key={d.name} className="flex items-center gap-1">
                         <div className="h-2 w-2 rounded-full" style={{ background: d.color }} />
@@ -230,47 +285,38 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               ) : (
-                <div className="h-[160px] flex items-center justify-center text-muted-foreground text-sm">
-                  Sem dados
-                </div>
+                <div className="h-[160px] flex items-center justify-center text-muted-foreground text-sm">Sem dados</div>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Bottom Row */}
+        {/* Charts Row 2: Daily Activity + Recent Signups */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Mock Exams Summary */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Clock className="h-4 w-4 text-amber-500" />
-                Simulados
+                <BarChart3 className="h-4 w-4 text-primary" />
+                Acessos Diários (Últimos 14 dias)
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-muted/50 rounded-lg">
-                  <p className="text-2xl font-bold text-foreground">{mockStats?.totalFinished ?? 0}</p>
-                  <p className="text-xs text-muted-foreground">Finalizados</p>
-                </div>
-                <div className="text-center p-3 bg-muted/50 rounded-lg">
-                  <p className="text-2xl font-bold text-foreground">{mockStats?.avgScore ?? 0}%</p>
-                  <p className="text-xs text-muted-foreground">Média Score</p>
-                </div>
-                <div className="text-center p-3 bg-muted/50 rounded-lg">
-                  <p className="text-2xl font-bold text-foreground">{mockStats?.quickCount ?? 0}</p>
-                  <p className="text-xs text-muted-foreground">Rápidos</p>
-                </div>
-                <div className="text-center p-3 bg-muted/50 rounded-lg">
-                  <p className="text-2xl font-bold text-foreground">{mockStats?.fullCount ?? 0}</p>
-                  <p className="text-xs text-muted-foreground">Completos</p>
-                </div>
-              </div>
+              {activityChart && activityChart.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={activityChart}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="label" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} interval={1} />
+                    <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} allowDecimals={false} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="attempts" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Respostas" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">Carregando...</div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Recent Signups */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
