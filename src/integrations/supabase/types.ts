@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       app_config: {
         Row: {
           key: string
@@ -718,6 +739,7 @@ export type Database = {
       subscriptions: {
         Row: {
           ends_at: string | null
+          is_lifetime: boolean | null
           plan: Database["public"]["Enums"]["subscription_plan"]
           started_at: string
           status: Database["public"]["Enums"]["subscription_status"]
@@ -727,6 +749,7 @@ export type Database = {
         }
         Insert: {
           ends_at?: string | null
+          is_lifetime?: boolean | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
           started_at?: string
           status?: Database["public"]["Enums"]["subscription_status"]
@@ -736,6 +759,7 @@ export type Database = {
         }
         Update: {
           ends_at?: string | null
+          is_lifetime?: boolean | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
           started_at?: string
           status?: Database["public"]["Enums"]["subscription_status"]
