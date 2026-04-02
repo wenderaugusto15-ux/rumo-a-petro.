@@ -6,17 +6,22 @@ import { supabase } from "@/integrations/supabase/client";
 export function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
-  const { data: isAdmin, isLoading: roleLoading } = useQuery({
+  const { data: roleData, isLoading: roleLoading } = useQuery({
     queryKey: ["user-role", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.rpc("has_role", {
-        _user_id: user!.id,
-        _role: "admin",
-      });
-      return !!data;
+      const [adminRes, masterRes] = await Promise.all([
+        supabase.rpc("has_role", { _user_id: user!.id, _role: "admin" }),
+        supabase.rpc("has_role", { _user_id: user!.id, _role: "master" as any }),
+      ]);
+      return {
+        isAdmin: !!adminRes.data,
+        isMaster: !!masterRes.data,
+      };
     },
     enabled: !!user,
   });
+
+  const isAdmin = roleData?.isAdmin || roleData?.isMaster;
 
   if (loading || roleLoading) {
     return (
