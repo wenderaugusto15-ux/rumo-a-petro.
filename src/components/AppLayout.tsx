@@ -92,7 +92,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
         <div className="p-3 border-t border-sidebar-border space-y-1">
           {isAdmin && (
-            <Link to="/admin" onClick={(e) => { e.stopPropagation(); e.preventDefault(); navigate("/admin"); }} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
+            <Link to="/admin" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
               <Shield className="h-5 w-5 text-destructive" />
               Painel Admin
             </Link>
@@ -155,7 +155,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </nav>
             <div className="p-3 border-t border-border space-y-1">
               {isAdmin && (
-                <Link to="/admin" onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMobileMenuOpen(false); navigate("/admin"); }} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:text-foreground hover:bg-muted transition-colors">
+                <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:text-foreground hover:bg-muted transition-colors">
                   <Shield className="h-5 w-5 text-destructive" />
                   Painel Admin
                 </Link>
